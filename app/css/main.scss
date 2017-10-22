@@ -24,7 +24,35 @@ nav {
   border-bottom: 3px solid;
 }
 
+form {
+  input,
+  button,
+  select {
+    width: 100% !important;
+  }
+}
+
+#content {
+  margin-top: 10rem !important;
+}
+
+.card {
+  margin-top: 2rem;
+}
+
 .sign {
   margin-top: 10rem;
   width: 40rem;
+}
+
+.table {
+  button {
+    width: 100%;
+  }
+}
+
+.title {
+  padding-bottom: 2rem;
+  margin-bottom: 2rem;
+  border-bottom: 3px solid;
 }

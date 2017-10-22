@@ -1,12 +1,21 @@
 {
-  "name": "moment2",
-  "private": true,
+  "name": "moment4",
+  "description": "",
+  "main": "",
+  "authors": [
+    "Christopher Gauffin <christopher.gauffin@gmail.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/christopher96/moment4",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
   "dependencies": {
     "bootstrap": "~4.0.0-alpha.6",
     "font-awesome": "fontawesome#^4.7.0"
-  },
-  "devDependencies": {
-    "chai": "^4.1.2",
-    "mocha": "^3.5.3"
   }
 }
