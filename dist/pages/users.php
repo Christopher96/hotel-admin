@@ -1,26 +1,38 @@
-<div class="container jumbotron">
-  <h1 class="title display-4">Användare</h1>
+<div class="container">
+  <h1 class="title display-4 text-secondary">Användare</h1>
+  <div id="alert" class="alert" role="alert">
+    <i class="fa fa-exclamation-circle error"></i>
+    <i class="fa fa-check-circle check"></i>
+    <span class="message"></span>
+  </div>
   <div class="card">
     <div class="card-header">
       Lägg till en ny användare
     </div>
     <div class="card-body">
-      <form class="form-inline">
+      <form id="user_form" class="form-inline">
         <div class="form-group col-3">
-          <input type="text" class="form-control" placeholder="Skriv hela namnet">
+          <label for="form_name">Namn:</label>
+          <input id="form_name" name="name" type="text" class="form-control" placeholder="Skriv hela namnet">
         </div>
         <div class="form-group col-3">
-          <input type="text" class="form-control" placeholder="Skriv ett användarnamn">
+          <label for="form_username">Användarnamn:</label>
+          <input id="form_username" name="username" type="text" class="form-control" placeholder="Skriv ett användarnamn">
         </div>
         <div class="form-group col-3">
-          <select class="form-control" id="exampleFormControlSelect1">
+          <label for="form_password">Lösenord:</label>
+          <input id="form_password" name="password" type="password" class="form-control" placeholder="Skriv ett lösenord">
+        </div>
+        <div class="form-group col-2">
+          <label for="form_role">Roll:</label>
+          <select id="form_role" name="role" class="form-control">
             <option value="" disabled selected>Välj en roll</option>
-            <option>Städare</option>
-            <option>Administratör</option>
+            <option value="0">Städare</option>
+            <option value="1">Administratör</option>
           </select>
         </div>
-        <div class="form-group col-3">
-          <button type="submit" class="btn btn-primary"><i class="fa fa-user-plus"></i> Skapa Användare</button>
+        <div class="form-group col-1">
+          <button id="user_form_submit" type="submit" class="btn btn-primary" data-container="body" data-toggle="popover" data-placement="top"><i class="fa fa-user-plus"></i></button>
         </div>
       </form>
     </div>
@@ -36,20 +48,11 @@
           <th>Användarnamn</th>
           <th>Roll</th>
           <th>Registrerades</th>
+          <th>Ta bort</th>
         </tr>
       </thead>
       <tbody>
       </tbody>
     </table>
   </div>
-  <div class="row">
-    
-  </div>
 </div>
-<script>
-
-window.onload = function(){
-    getUserList();
-}
-
-</script>

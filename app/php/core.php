@@ -29,4 +29,3 @@ if (isset($_SESSION['user_id'])) {
 	$user = getUserSession($_SESSION['user_id']);
 	if($user['role'] > 0) $priv = true;
 }
-

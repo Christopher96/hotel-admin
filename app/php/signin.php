@@ -19,7 +19,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
 
 				updateUserSession($user['id'], session_id());
 
-				redirect("profile");
+				redirect("rooms");
 			} else {
 				$error = "Fel lösenord för användaren '".$_POST['username']."', försök igen.";
 			}

@@ -1,9 +1,8 @@
 <script>
     var active = '<?= $page ?>';
+    var auth = {};
     <?php if(isset($user)) { ?>
-        var auth = {
-            "user_id": "<?= $user['id'] ?>",
-            "session_id": "<?= session_id() ?>"
-        };
+        auth.user_id = "<?= $user['id'] ?>";
+        auth.session_id = "<?= session_id() ?>";
     <?php } ?>
 </script>

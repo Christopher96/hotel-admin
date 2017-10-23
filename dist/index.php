@@ -2,7 +2,6 @@
 include("php/core.php");
 
 $scripts = array("signout", "signin", "signup");
-$public_pages = array("home", "signout", "signin", "signup", "users", "post");
 
 if( $page = key($_GET) ){
 
@@ -10,12 +9,12 @@ if( $page = key($_GET) ){
 		include("php/".$page.".php");
 	}
 	
-	if(!isset($user) && !in_array($page, $public_pages)){
-		redirect("home");
+	if(!isset($user) && $page != "signin"){
+		redirect("signin");
 	}
 	
 	$includes = array("header", "get_to_js", "auth");
 	include("php/generate.php");
 } else {
-	redirect("home");
+	redirect("signin");
 }

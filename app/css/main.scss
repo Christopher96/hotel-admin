@@ -33,11 +33,47 @@ form {
 }
 
 #content {
-  margin-top: 10rem !important;
+  margin: 10rem 0;
+}
+
+#room_form {
+  .card-body {
+    padding: 3rem;
+  }
+  button[type=submit] {
+    @extend .bg-primary;
+  }
+}
+
+.no-img,
+.room-img {
+  width: 100%;
+}
+
+.no-img {
+  height: 15rem;
+  border: 1px solid;
+  border-radius: 10px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .fa {
+    font-size: 5rem;
+  }
+}
+
+.navbar {
+  padding-left: 9rem;
+  padding-right: 9rem;
 }
 
 .card {
   margin-top: 2rem;
+}
+
+.card-header {
+  font-size: 1.2rem;
 }
 
 .sign {
@@ -55,4 +91,11 @@ form {
   padding-bottom: 2rem;
   margin-bottom: 2rem;
   border-bottom: 3px solid;
+}
+
+.alert {
+  display: none;
+  .fa {
+    display: none;
+  }
 }
