@@ -3,31 +3,35 @@
         Rum
         <a href="?newroom" class="btn btn-primary float-right"><i class="fa fa-plus"></i><span> Skapa nytt hotellrum</span></a>
     </h1>
-    <div class="card">
+    
+    <div id="uncleaned_rooms" class="card">
         <div class="card-header">
-            Städade rum
+            Ej städade rum
         </div>
-        <table id="user_table" class="table table-secondary">
+        <span class="no-list-text">Alla rum är städade!</span>
+        <table class="table table-secondary room-table">
             <thead>
-                <tr>
-                <th>Nummer #</th>
+                <th>Bild</th>
+                <th>Rumskod</th>
+                <th>Beskrivning</th>
                 <th>Ändra</th>
-                </tr>
             </thead>
             <tbody>
             </tbody>
         </table>
     </div>
-    <div class="card">
+
+    <div id="cleaned_rooms" class="card">
         <div class="card-header">
-            Ej städade rum
+            Städade rum
         </div>
-        <table id="user_table" class="table table-secondary">
+        <span class="no-list-text">Inga rum har städats.</span>
+        <table class="table table-secondary room-table">
             <thead>
-                <tr>
-                <th>Nummer #</th>
+                <th>Bild</th>
+                <th>Rumskod</th>
+                <th>Beskrivning</th>
                 <th>Ändra</th>
-                </tr>
             </thead>
             <tbody>
             </tbody>

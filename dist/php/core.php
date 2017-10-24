@@ -22,6 +22,7 @@ function redirect($page, $params = null) {
 	exit;
 }
 
+
 $priv = false;
 $user = null;
 

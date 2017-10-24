@@ -121,7 +121,9 @@ gulp.task('serve', () => {
     gulp.watch('bower.json', ['wiredep', 'fonts']);
     gulp.watch('app/*.html', ['html']);
 
-    gulp.watch(["app/**/*.php"], function (obj) {
+    gulp.watch([
+      "app/**/*.php"
+  ], function (obj) {
       return gulp.src(obj.path, {"base": "app/"})
       .pipe(gulp.dest("dist"))
       .pipe(reload({stream: true}));

@@ -5,9 +5,10 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-require_once("connect.php");
+require_once("php/connect.php");
 
-$post_image_target = "img/post_images/post_image_";
+$full_target = "img/post_images/post_image_";
+$thumb_target = $full_target."thumb_";
 
 $response = array(
   "success" => false
@@ -46,8 +47,8 @@ if(!empty($_REQUEST['action'])){
   switch ($_REQUEST['action']) {
     case 'createUser':
     case 'deleteUser':
-    case 'createPost':
-    case 'deletePost':
+    case 'createRoom':
+    case 'deleteRoom':
     case 'changeName':
     case 'getProfilePosts':
     case 'getUserInfo':
@@ -75,18 +76,6 @@ if(!empty($_REQUEST['action'])){
       switch ($_POST['action']) {
 
         // USER METHODS
-        case 'createPost':
-          if( checkParams($_POST, array("title", "description", "body")) && isset($_FILES['image']) ){
-            createPost($user_id, $_POST['title'], $_POST['description'], $_POST['body'], $_FILES);
-          } else {
-              $response['message'] = "Fyll i alla fält för att skapa inlägg.";
-          }
-        break;
-        case 'deletePost':
-          if( checkParams($_POST, array("post_id")) ){
-            deletePost($_POST['post_id']);
-          }
-        break;
         case 'createUser':
           if( checkParams($_POST, array("name", "username", "password", "role")) ){
               createUser($_POST['name'], $_POST['username'], $_POST['password'], $_POST['role']);
@@ -97,6 +86,24 @@ if(!empty($_REQUEST['action'])){
         case 'deleteUser':
           if( checkParams($_POST, array("target_id")) ){  
             deleteUser($_POST['target_id']);
+          }
+        break;
+        case 'createRoom':
+        if( checkParams($_POST, array("number", "level", "department", "description")) && isset($_FILES['image']) ){
+
+            $file_error = $_FILES['image']['error'];
+            if ($file_error === UPLOAD_ERR_OK) { 
+              createRoom($_POST['number'], $_POST['level'], $_POST['department'], $_POST['description'], $_FILES);
+            } else { 
+              errorMessage($file_error);
+            }  
+        } else {
+            $response['message'] = "Fyll i alla fält för att skapa rum.";
+        }
+        break;
+        case 'deleteRoom':
+          if( checkParams($_POST, array("room_id")) ){
+            deletePost($_POST['room_id']);
           }
         break;
         case 'changeName':
@@ -110,30 +117,8 @@ if(!empty($_REQUEST['action'])){
     } else if(!empty($_GET['action'])){
 
       switch ($_GET['action']) {
-        case 'getSinglePost':
-          if(checkParams($_GET, array("post_id"))){
-            getSinglePost($_GET['post_id']);
-          }
-        break;
-        case 'getMainPosts':
-          if(checkParams($_GET, array("page", "items"))){
-            getPosts($_GET['page'], $_GET['items']);
-          }
-        break;
-        case 'getUserPosts':
-          if(checkParams($_GET, array("page", "items", "user_id"))){
-            getPosts($_GET['page'], $_GET['items'], array("user_id" => $_GET['user_id']));
-          }
-        break;
-        case 'getTrendingPosts':
-          if(checkParams($_GET, array("page", "items"))){
-            getPosts($_GET['page'], $_GET['items'], array("trending" => true));
-          }
-        break;
-        case 'getUserInfo':
-          if(checkParams($_GET, array("user_id"))){
-            getUserInfo($_GET['user_id']);
-          }
+        case 'getRooms':
+          getRooms();
         break;
         case 'getUsers':
           getUsers();
@@ -158,7 +143,11 @@ if(!empty($_REQUEST['action'])){
 
 function checkParams($data, $params){
   foreach ($params as $param) {
-    if(!isset($data[$param])){
+    if(isset($data[$param])){
+      if($data[$param] === "") {
+        return false;
+      }
+    } else {
       return false;
     }
   }
@@ -229,7 +218,7 @@ function updateUserInfo($col, $val, $user_id){
 function getUsers(){
   global $conn, $response;
 
-  $query = "SELECT id, name, username, timestamp, role FROM users";
+  $query = "SELECT * FROM users";
 
   if( $result = mysqli_query($conn, $query) ){
 
@@ -246,64 +235,23 @@ function getUsers(){
   }
 }
 
-
-function getSinglePost($post_id){
+function getRooms(){
   global $conn, $response;
 
-  $query = "SELECT * FROM posts WHERE id={$post_id}";
+  $query = "SELECT * FROM rooms";
 
   if( $result = mysqli_query($conn, $query) ){
-
-    $post = mysqli_fetch_assoc($result);
-    $post['image'] = getPostImages($post['id']);
-
-    $response['success'] = true;
-    $response['body'] = $post;
-  }
-}
-
-
-function getPosts($page, $items, $optional = array()){
-  global $conn, $response;
-
-  $query = "SELECT * FROM posts";
-
-  if(!empty($optional['trending'])) $query .= " ORDER BY views DESC";
-
-  $where = "";
-  if(!empty($optional['user_id'])) $where .= " WHERE user_id={$optional['user_id']}";
-  if(!empty($optional['black_id'])) $where .= " AND id<{$optional['black_id']}";
-
-  $query .= $where;
-
-  $offset = $page * $items;
-  $limit = " LIMIT {$offset}, {$items}";
-
-  if( $result = mysqli_query($conn, $query.$limit) ){
 
     if( mysqli_num_rows($result) > 0 ){
       $response['success'] = true;
 
-      while( $post = mysqli_fetch_assoc($result) ) {
-        $posts[] = $post;
+      while( $room = mysqli_fetch_assoc($result) ) {
+        $room['image'] = getPostImages($room['id']);
+        $rooms[] = $room;
       }
 
-      foreach($posts as $i => $post) {
-        $posts[$i]['image'] = getPostImages($post['id']);
-        $posts[$i]['creator'] = getUserName($post['user_id']);
-      }
-
-      $offset += $items;
-      $limit = " LIMIT {$offset}, 1";
-
-      if( $result = mysqli_query($conn, $query.$limit) ){
-        $response['more'] = mysqli_num_rows($result) > 0;
-        $response['success'] = true;
-        $response['body'] = $posts;
-      }
-    } else {
-      if(!empty($optional['user_id'])) $response['message'] = "Du har inte gjort några inlägg än";
-      else $response['message'] = 'Inga nya inlägg';
+      $response['success'] = true;
+      $response['body'] = $rooms;
     }
   }
 }
@@ -311,27 +259,18 @@ function getPosts($page, $items, $optional = array()){
 function getPostImages($post_id){
   global $conn;
 
-  $query = "SELECT * FROM images WHERE post_id={$post_id}";
+  $query = "SELECT * FROM images WHERE room_id={$post_id}";
 
   if( $result = mysqli_query($conn, $query) ){
     return mysqli_fetch_assoc($result);
   }
 }
 
-function getUserName($user_id){
-  global $conn;
 
-  $query = "SELECT name FROM users WHERE id={$user_id}";
-
-  if( $result = mysqli_query($conn, $query) ){
-    return mysqli_fetch_assoc($result)['name'];
-  }
-}
-
-function deletePost($post_id){
+function deletePost($room_id){
   global $conn, $response, $post_image_target;
 
-  $query = "SELECT id FROM images WHERE post_id={$post_id}";
+  $query = "SELECT id FROM images WHERE room_id={$room_id}";
 
   if( $result = mysqli_query($conn, $query) ){
     while( $image_id = mysqli_fetch_assoc($result)['id'] ){
@@ -348,7 +287,7 @@ function deletePost($post_id){
       }
     }
 
-    $query = "DELETE FROM posts WHERE id={$post_id}";
+    $query = "DELETE FROM posts WHERE id={$room_id}";
 
     if( mysqli_query($conn, $query) ){
         $response['success'] = true;
@@ -356,58 +295,143 @@ function deletePost($post_id){
   }
 }
 
-function createPost($user_id, $title, $description, $body, $files){
+function createRoom($number, $level, $department, $description, $files){
   global $conn, $response;
-
-  $query = "INSERT INTO posts (title, description, body, user_id) VALUES ('{$title}', '{$description}', '{$body}', '{$user_id}')";
+  
+  $query = "INSERT INTO rooms (number, level, department, description) VALUES ('{$number}', '{$level}', '{$department}', '{$description}')";
 
   if( mysqli_query($conn, $query) ){
 
-    $post_id = mysqli_insert_id($conn);
+    $room_id = mysqli_insert_id($conn);
     $name = addslashes($files['image']['name']);
     $tmp = addslashes($files['image']['tmp_name']);
 
-    if( uploadPostImage($name, $tmp, $post_id) ){
+    if( uploadRoomImage($name, $tmp, $room_id) ){
       $response['success'] = true;
-      $response['message'] = "Ditt inlägg har skapats!";
-      $response['body'] = array("post_id"=>$post_id);
-    } else {
-      $response['message'] = "Bilden får max väga 2 MB";
-      $query = "DELETE FROM posts WHERE id={$post_id}";
-      mysqli_query($conn, $query);
+      $response['message'] = "Ditt rum har skapats!";
+      $response['body'] = array("room_id"=>$room_id);
     }
   }
 }
 
 
+function uploadRoomImage($name, $img, $room_id) {
+  global $conn, $response, $full_target, $thumb_target;
 
-function uploadPostImage($name, $tmp, $post_id) {
-  global $conn, $response, $post_image_target;
+  if( $img_info = @getimagesize( $img ) ){
 
-  if( $img = @getimagesize( $tmp ) ){
-
-    $query = "INSERT INTO images (name, post_id) VALUES ('{$name}','{$post_id}')";
+    $query = "INSERT INTO images (name, room_id) VALUES ('{$name}','{$room_id}')";
 
     if( mysqli_query($conn, $query) ){
 
       $image_id = mysqli_insert_id($conn);
 
-      $ext = ".".pathinfo($name, PATHINFO_EXTENSION);
-      $target = $post_image_target.$image_id.$ext;
+      $ext = image_type_to_extension($img_info[2]);
+      $full = $full_target.$image_id.$ext;
+      $thumb = $thumb_target.$image_id.$ext;
 
-      $query = "UPDATE images SET src='{$target}' WHERE id={$image_id}";
+      if( move_uploaded_file($img, $full)){
 
-      if( mysqli_query($conn, $query) ){
-        if( move_uploaded_file($tmp, $target) ){
-          return true;
+        if( createThumb($img_info, $thumb, $full) ){
+
+          $query = "UPDATE images SET full='{$full}',thumb='{$thumb}' WHERE id={$image_id}";
+
+          if( mysqli_query($conn, $query) ){
+            return true;
+          } else {
+            $query = "DELETE FROM images WHERE id={$image_id}";
+          }
         }
-      } else {
-        
       }
     }
+  } else {
+    $response['message'] = "Bilden får max väga 2 MB";
+    $query = "DELETE FROM rooms WHERE id={$room_id}";
+    mysqli_query($conn, $query);
   }
 
   return false;
 }
+
+function createThumb($img, $thumb, $full) {
+
+    $thumb_width = 150;
+    $thumb_height = 150;
+
+    $org_width = $img[0];
+    $org_height = $img[1];
+
+    $aspect_ratio = $org_width / $org_height;
+
+    if ($org_width > $org_height) {
+        $new_width = $thumb_width;
+        $new_height = intval($thumb_width / $aspect_ratio);
+    } else {
+        $new_height = $thumb_height;
+        $new_width = intval($thumb_height * $aspect_ratio);
+    }
+
+    switch ($img[2]) {
+      case IMAGETYPE_GIF:
+        $imgt = "ImageGIF";
+        $imgcreatefrom = "ImageCreateFromGIF";
+      break;
+      case IMAGETYPE_JPEG:
+        $imgt = "ImageJPEG";
+        $imgcreatefrom = "ImageCreateFromJPEG";
+      break;
+      case IMAGETYPE_PNG:
+        $imgt = "ImagePNG";
+        $imgcreatefrom = "ImageCreateFromPNG";
+      break;
+    }
+
+    if ($imgt) {
+        $old_image = $imgcreatefrom($full);
+        $new_image = imagecreatetruecolor($new_width, $new_height);
+
+        imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $org_width, $org_height);
+        if( $imgt($new_image, $thumb) ) {
+          return true;
+        }
+    }
+
+    return false;
+}
+
+
+function errorMessage($code) { 
+  global $response;
+
+  switch ($code) { 
+    case UPLOAD_ERR_INI_SIZE: 
+        $message = "The uploaded file exceeds the upload_max_filesize directive in php.ini"; 
+        break; 
+    case UPLOAD_ERR_FORM_SIZE: 
+        $message = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form"; 
+        break; 
+    case UPLOAD_ERR_PARTIAL: 
+        $message = "The uploaded file was only partially uploaded"; 
+        break; 
+    case UPLOAD_ERR_NO_FILE: 
+        $message = "Du har inte valt någon bild."; 
+        break; 
+    case UPLOAD_ERR_NO_TMP_DIR: 
+        $message = "Missing a temporary folder"; 
+        break; 
+    case UPLOAD_ERR_CANT_WRITE: 
+        $message = "Failed to write file to disk"; 
+        break; 
+    case UPLOAD_ERR_EXTENSION: 
+        $message = "File upload stopped by extension"; 
+        break; 
+
+    default: 
+        $message = "Unknown upload error"; 
+        break; 
+  } 
+
+  $response['message'] = $message; 
+} 
 
 echo json_encode($response);
