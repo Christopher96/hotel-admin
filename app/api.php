@@ -1,7 +1,6 @@
 <?php
 // Created by: Christopher Gauffin
 // Description: Core API functionality, contains cleaning method, session check, profile edit, post retrieval, post creation and post deletion.
-
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -103,7 +102,7 @@ if(!empty($_REQUEST['action'])){
         break;
         case 'deleteRoom':
           if( checkParams($_POST, array("room_id")) ){
-            deletePost($_POST['room_id']);
+            deleteRoom($_POST['room_id']);
           }
         break;
         case 'changeName':
@@ -123,18 +122,10 @@ if(!empty($_REQUEST['action'])){
         case 'getUsers':
           getUsers();
         break;
-
-        // PROFILE METHODS
-        case 'getProfilePosts':
-          if(checkParams($_GET, array("page", "items"))){
-            getPosts($_GET['page'], $_GET['items'], array(
-              "user_id" => $user_id,
-              "black_id" => isset($_GET['black_id']) ? $_GET['black_id'] : 0
-            ));
+        case 'getSingleRoom':
+          if( checkParams($_GET, array("room_id")) ){
+            getSingleRoom($_GET['room_id']);
           }
-        break;
-        case 'getProfileInfo':
-          getUserInfo($user_id);
         break;
       }
     }
@@ -256,10 +247,27 @@ function getRooms(){
   }
 }
 
-function getPostImages($post_id){
+function getSingleRoom($room_id){
+  global $conn, $response;
+
+  $query = "SELECT * FROM rooms WHERE id={$room_id}";
+  $result = mysqli_query($conn, $query);
+
+  if( mysqli_num_rows($result) > 0 ){
+
+    $room = mysqli_fetch_assoc($result);
+    $room['image'] = getPostImages($room['id']);
+
+    $response['success'] = true;
+    $response['body'] = $room;
+  }
+}
+
+
+function getPostImages($room_id){
   global $conn;
 
-  $query = "SELECT * FROM images WHERE room_id={$post_id}";
+  $query = "SELECT * FROM images WHERE room_id={$room_id}";
 
   if( $result = mysqli_query($conn, $query) ){
     return mysqli_fetch_assoc($result);
@@ -267,11 +275,11 @@ function getPostImages($post_id){
 }
 
 
-function deletePost($room_id){
+function deleteRoom($room_id){
   global $conn, $response, $post_image_target;
 
   $query = "SELECT id FROM images WHERE room_id={$room_id}";
-
+  
   if( $result = mysqli_query($conn, $query) ){
     while( $image_id = mysqli_fetch_assoc($result)['id'] ){
 
@@ -287,9 +295,12 @@ function deletePost($room_id){
       }
     }
 
-    $query = "DELETE FROM posts WHERE id={$room_id}";
+    $query = "DELETE FROM rooms WHERE id={$room_id}";
+    mysqli_query($conn, $query);
 
-    if( mysqli_query($conn, $query) ){
+    $query = "SELECT * FROM rooms WHERE id={$room_id}";
+    $result = mysqli_query($conn, $query);
+    if( mysqli_num_rows($result) < 1 ){
         $response['success'] = true;
     }
   }
@@ -298,20 +309,29 @@ function deletePost($room_id){
 function createRoom($number, $level, $department, $description, $files){
   global $conn, $response;
   
-  $query = "INSERT INTO rooms (number, level, department, description) VALUES ('{$number}', '{$level}', '{$department}', '{$description}')";
+  $query = "SELECT * FROM rooms WHERE number='{$number}' AND level='{$level}' AND department='{$department}'";
+  $result = mysqli_query($conn, $query);
 
-  if( mysqli_query($conn, $query) ){
+  if( mysqli_num_rows($result) < 1 ){
+     $query = "INSERT INTO rooms (number, level, department, description) VALUES ('{$number}', '{$level}', '{$department}', '{$description}')";
 
-    $room_id = mysqli_insert_id($conn);
-    $name = addslashes($files['image']['name']);
-    $tmp = addslashes($files['image']['tmp_name']);
+    if( mysqli_query($conn, $query) ){
 
-    if( uploadRoomImage($name, $tmp, $room_id) ){
-      $response['success'] = true;
-      $response['message'] = "Ditt rum har skapats!";
-      $response['body'] = array("room_id"=>$room_id);
+      $room_id = mysqli_insert_id($conn);
+      $name = addslashes($files['image']['name']);
+      $tmp = addslashes($files['image']['tmp_name']);
+
+      if( uploadRoomImage($name, $tmp, $room_id) ){
+        $response['success'] = true;
+        $response['message'] = "Ditt rum har skapats!";
+        $response['body'] = array("room_id"=>$room_id);
+        return;
+      }
     }
-  }
+  } 
+  
+  $response['message'] = "Detta rum har redan skapats.";
+ 
 }
 
 
@@ -346,7 +366,7 @@ function uploadRoomImage($name, $img, $room_id) {
     }
   } else {
     $response['message'] = "Bilden får max väga 2 MB";
-    $query = "DELETE FROM rooms WHERE id={$room_id}";
+    $query = "DELETE FROM images WHERE id={$room_id}";
     mysqli_query($conn, $query);
   }
 

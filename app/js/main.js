@@ -21,7 +21,7 @@ $(document).ready(function(){
         });
       break;
 
-      case "newroom":
+      case "editroom":
         var reader = new FileReader();
         reader.onload = function (e) {
           $('#room_img img').attr('src', e.target.result);
@@ -29,15 +29,12 @@ $(document).ready(function(){
 
         $("#room_img_input").change(function() {
           var input = $(this)[0];
-
+          
           if (input.files && input.files[0]) {
             reader.readAsDataURL(input.files[0]);
-            $("#room_img i").hide();
-            $("#room_img img").show();
-          } else {
-            $("#room_img i").show();
-            $("#room_img img").hide();
           }
+
+          hideSwitch($("#room_img i"), $("#room_img img"), input.files[0]);
         });
 
         $("#room_form").submit(function(e) {
@@ -46,6 +43,12 @@ $(document).ready(function(){
           var formData = new FormData(this);
           createRoom(formData);
         });
+
+        if(room_id !== undefined) {
+          updateRoomForm(room_id);
+
+          $("#room_form [type=submit]").text("Uppdatera hotellrum");
+        }
       break;
 
       case "rooms":
@@ -53,6 +56,8 @@ $(document).ready(function(){
       break;
     }
 });
+
+
 
 function apiRequest(method, action, params, callback = null){
 
@@ -94,6 +99,9 @@ function apiRequest(method, action, params, callback = null){
   });
 }
 
+function updateRoomFormImg(path) {
+  
+}
 
 function newAlert(alert, isError, message) {
   alert.addClass(isError ? "alert-danger" : "alert-success");
@@ -101,14 +109,8 @@ function newAlert(alert, isError, message) {
   var check = alert.find(".check");
   var error = alert.find(".error");
 
-  if(isError) {
-    error.show();
-    check.hide();
-  } else {
-    error.hide();
-    check.show();
-  }
-
+  hideSwitch(error, check, isError);
+  
   alert.find(".message").text(message);
   alert.fadeIn(300);
 
@@ -151,6 +153,7 @@ function getUserList(){
   });
 }
 
+
 function deleteUser(user_id) {
   console.log(user_id);
   apiRequest("POST", "deleteUser", {target_id: user_id}, function(response) {
@@ -187,20 +190,40 @@ function createRoom(formData) {
   });
 }
 
+function deleteRoom(id) {
+  apiRequest("POST", "deleteRoom", {room_id: id}, function(response) {
+    getRoomList();
+  });
+}
+
+function changeRoom(id) {
+  location.href = "?editroom&room_id="+id;
+}
+
+function updateRoomForm(id) {
+  apiRequest("GET", "getSingleRoom", {room_id: id}, function(response) {
+    console.log(response);
+    var form = $("#room_form");
+    var obj = response.body;
+    form.find("[name=number]").val(obj.number);
+    form.find("[name=level]").val(obj.level);
+    form.find("[name=department]").val(obj.department);
+    form.find("[name=description]").text(obj.description);
+    form.find("img").attr("src", obj.image.thumb);
+  });
+}
+
 function getRoomList() {
   apiRequest("GET", "getRooms", {}, function(response) {
-    if(!response.success) {
-      console.log(response);
-      return;
-    }
-
     var cleanedList = $("#cleaned_rooms table tbody");
     var uncleanedList = $("#uncleaned_rooms table tbody");
     cleanedList.empty();
     uncleanedList.empty();
 
     $.each(response.body, function(i, obj){
-      var tr = $("<tr data-id='"+obj.id+"'></tr>");
+      var id = obj.id;
+      
+      var tr = $("<tr data-id='"+id+"'></tr>");
 
       tr.append("<td><img src='"+obj.image.thumb+"'</td>")
       tr.append("<td>"+obj.level+obj.department+obj.number+"</td>");
@@ -208,15 +231,16 @@ function getRoomList() {
 
       var td = $("<td></td>");
 
+      
       if(obj.cleaned) {
-        td.append(createButton("clean", "check"));
+        td.append(createButton("clean", "check", id));
       } else {
-        td.append(createButton("unclean", "remove"));
+        td.append(createButton("unclean", "remove", id));
       }
 
       if(priv) {
-        td.append(createButton("change", "edit"));
-        td.append(createButton("delete", "trash"));
+        td.append(createButton("change", "edit", id));
+        td.append(createButton("delete", "trash", id));
       }
       
       tr.append(td);
@@ -228,25 +252,34 @@ function getRoomList() {
       }
     });
 
-    if(cleanedList.length) {
-      $("#cleaned_rooms .room-table").show();
-      $("#cleaned_rooms .no-list-text").hide();
-    } else {
-      $("#cleaned_rooms .room-table").hide();
-      $("#cleaned_rooms .no-list-text").show();
-    }
+    hideSwitch($("#cleaned_rooms .room-table"), $("#cleaned_rooms .no-list-text"), cleanedList.children().length != 0);
+    hideSwitch($("#uncleaned_rooms .room-table"), $("#uncleaned_rooms .no-list-text"), uncleanedList.children().length != 0);
 
-    if(uncleanedList.length) {
-      $("#uncleaned_rooms .room-table").show();
-      $("#uncleaned_rooms .no-list-text").hide();
-    } else {
-      console.log("asdf");
-      $("#uncleaned_rooms .room-table").hide();
-      $("#uncleaned_rooms .no-list-text").show();
-    }
   });
 }
 
-function createButton(action, icon) {
-  return $("<button class='btn btn-primary "+action+"'><i class='fa fa-"+icon+"'></i></button>");
+function createButton(action, icon, id) {
+  var button = $("<button class='btn btn-primary "+action+"'><i class='fa fa-"+icon+"'></i></button>");
+  button.click(function() {
+    switch(action){
+      case "delete":
+        deleteRoom(id);
+      break;
+      case "change":
+        changeRoom(id);
+      break;
+    }
+  });
+
+  return button;
+}
+
+function hideSwitch(show, hide, bool) {
+  if(bool) {
+    show.show();
+    hide.hide();
+  } else {
+    hide.show();
+    show.hide();
+  }
 }
