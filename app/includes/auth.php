@@ -1,4 +1,5 @@
 <script>
+    var room_id = false;
     var active = '<?= $page ?>';
     var priv = '<?= $priv ?>';
     var auth = {};

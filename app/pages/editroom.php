@@ -1,3 +1,8 @@
+<?php if(isset($_GET['room_id'])) { ?>
+<script>
+    room_id = <?= $_GET['room_id'] ?>;
+</script>
+<?php } ?>
 <div class="container">
     <h1 class="title display-4 text-secondary">
         Nytt rum
@@ -51,7 +56,7 @@
                     <i class="fa fa-check-circle check"></i>
                     <span class="message"></span>
                 </div>
-            <button class="btn btn-primary" type="submit">Skapa hotellrum</button>
+                <button class="btn btn-primary" type="submit">Skapa hotellrum</button>
                 
             </div>
             

@@ -102,11 +102,11 @@ gulp.task('extras', () => {
 gulp.task('clean', del.bind(null, ['.tmp', 'dist']));
 
 gulp.task('serve', () => {
-  runSequence(['wiredep'], ['styles', 'scripts', 'php', 'fonts'], () => {
+  runSequence(['wiredep'], ['build'], () => {
     browserSync.init({
       notify: false,
       port: 9000,
-      proxy: "http://localhost/~syphez/plugg/dt148g/moment4/dist",
+      proxy: "http://localhost/plugg/dt148g/moment4/dist",
     });
 
     gulp.watch([
@@ -123,10 +123,10 @@ gulp.task('serve', () => {
 
     gulp.watch([
       "app/**/*.php"
-  ], function (obj) {
+    ], function (obj) {
       return gulp.src(obj.path, {"base": "app/"})
       .pipe(gulp.dest("dist"))
-      .pipe(reload({stream: true}));
+      .pipe($.if(/^(?!.*api\.php$).*$/, reload({stream: true})));
     });
   });
 });
@@ -149,7 +149,7 @@ gulp.task('wiredep', () => {
     .pipe(gulp.dest('app'));
 });
 
-gulp.task('build', ['lint', 'html', 'php', 'images', 'fonts', 'extras'], () => {
+gulp.task('build', ['lint', 'html', 'php', 'images', 'fonts', 'extras', 'scripts', 'styles'], () => {
   return gulp.src('dist/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 

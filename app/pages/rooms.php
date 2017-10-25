@@ -1,7 +1,7 @@
 <div class="container">
     <h1 class="title display-4 text-secondary">
         Rum
-        <a href="?newroom" class="btn btn-primary float-right"><i class="fa fa-plus"></i><span> Skapa nytt hotellrum</span></a>
+        <a href="?editroom" class="btn btn-primary float-right"><i class="fa fa-plus"></i><span> Skapa nytt hotellrum</span></a>
     </h1>
     
     <div id="uncleaned_rooms" class="card">

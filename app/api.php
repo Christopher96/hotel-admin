@@ -14,9 +14,12 @@ $response = array(
 );
 
 $clean = array();
+$_FILES = cleanArray( $_FILES );
 $_REQUEST = cleanArray( $_REQUEST );
 $_POST = cleanArray( $_POST );
 $_GET = cleanArray( $_GET );
+
+print_r($_FILES);
 
 function cleanArray($array){
   global $clean;
@@ -43,10 +46,12 @@ if(!empty($_REQUEST['action'])){
 
   $methodIsValid = false;
 
+
   switch ($_REQUEST['action']) {
     case 'createUser':
     case 'deleteUser':
     case 'createRoom':
+    case 'updateRoom':
     case 'deleteRoom':
     case 'changeName':
     case 'getProfilePosts':
@@ -69,7 +74,7 @@ if(!empty($_REQUEST['action'])){
   }
 
   if($methodIsValid){
-
+    
     if(!empty($_POST['action'])){
 
       switch ($_POST['action']) {
@@ -88,16 +93,17 @@ if(!empty($_REQUEST['action'])){
           }
         break;
         case 'createRoom':
-        if( checkParams($_POST, array("number", "level", "department", "description")) && isset($_FILES['image']) ){
-
-            $file_error = $_FILES['image']['error'];
-            if ($file_error === UPLOAD_ERR_OK) { 
-              createRoom($_POST['number'], $_POST['level'], $_POST['department'], $_POST['description'], $_FILES);
-            } else { 
-              errorMessage($file_error);
-            }  
+        if( checkParams($_POST, array("number", "level", "department", "description")) ){
+            createRoom($_POST['number'], $_POST['level'], $_POST['department'], $_POST['description']);
         } else {
             $response['message'] = "Fyll i alla fält för att skapa rum.";
+        }
+        break;
+        case 'updateRoom':
+        if( checkParams($_POST, array("room_id", "number", "level", "department", "description"))){
+            updateRoom($_POST['room_id'], $_POST['number'], $_POST['level'], $_POST['department'], $_POST['description']);
+        } else {
+            $response['message'] = "Fyll i alla fält för att uppdatera rum.";
         }
         break;
         case 'deleteRoom':
@@ -133,6 +139,7 @@ if(!empty($_REQUEST['action'])){
 }
 
 function checkParams($data, $params){
+  return true;
   foreach ($params as $param) {
     if(isset($data[$param])){
       if($data[$param] === "") {
@@ -141,6 +148,21 @@ function checkParams($data, $params){
     } else {
       return false;
     }
+  }
+
+  return true;
+}
+
+
+function checkFileErrors() {
+  global $_FILES;
+  print_r($_FILES);
+  foreach($_FILES as $file) {
+    $file_error = $file['error'];
+    if ($file_error !== UPLOAD_ERR_OK) { 
+      $response['message'] = errorMessage($file_error);
+      return false;
+    } 
   }
 
   return true;
@@ -278,6 +300,18 @@ function getPostImages($room_id){
 function deleteRoom($room_id){
   global $conn, $response, $post_image_target;
 
+  $query = "DELETE FROM rooms WHERE id={$room_id}";
+  mysqli_query($conn, $query);
+
+  $query = "SELECT * FROM rooms WHERE id={$room_id}";
+  $result = mysqli_query($conn, $query);
+  if( mysqli_num_rows($result) < 1 ){
+    deleteRoomImages($room_id);
+    $response['success'] = true;
+  }
+}
+
+function deleteRoomImages($room_id) {
   $query = "SELECT id FROM images WHERE room_id={$room_id}";
   
   if( $result = mysqli_query($conn, $query) ){
@@ -292,51 +326,74 @@ function deleteRoom($room_id){
         foreach ($files as $file) {
           unlink($file);
         }
+
+        return true;
       }
     }
+  }
 
-    $query = "DELETE FROM rooms WHERE id={$room_id}";
-    mysqli_query($conn, $query);
+  return false;
+}
 
-    $query = "SELECT * FROM rooms WHERE id={$room_id}";
+function createRoom($number, $level, $department, $description){
+  global $conn, $response;
+  
+  if( checkFileErrors() ){
+    $query = "SELECT * FROM rooms WHERE number='{$number}' AND level='{$level}' AND department='{$department}'";
     $result = mysqli_query($conn, $query);
+
     if( mysqli_num_rows($result) < 1 ){
-        $response['success'] = true;
+      $query = "INSERT INTO rooms (number, level, department, description) VALUES ('{$number}', '{$level}', '{$department}', '{$description}')";
+
+      if( mysqli_query($conn, $query) ){
+
+        $room_id = mysqli_insert_id($conn);
+
+        if( uploadRoomImage($room_id, $_FILES) ){
+          $response['success'] = true;
+          $response['message'] = "Ditt rum har skapats!";
+        }
+      }
+    } else {
+      $response['message'] = "Detta rum finns redan.";
     }
   }
 }
 
-function createRoom($number, $level, $department, $description, $files){
+function updateRoom($room_id, $number, $level, $department, $description) {
   global $conn, $response;
   
   $query = "SELECT * FROM rooms WHERE number='{$number}' AND level='{$level}' AND department='{$department}'";
   $result = mysqli_query($conn, $query);
 
   if( mysqli_num_rows($result) < 1 ){
-     $query = "INSERT INTO rooms (number, level, department, description) VALUES ('{$number}', '{$level}', '{$department}', '{$description}')";
+    $query = "UPDATE rooms SET number='{$number}', level='{$level}', department='{$department}', $description='{$description}' WHERE id={$room_id}";
 
     if( mysqli_query($conn, $query) ){
 
-      $room_id = mysqli_insert_id($conn);
-      $name = addslashes($files['image']['name']);
-      $tmp = addslashes($files['image']['tmp_name']);
-
-      if( uploadRoomImage($name, $tmp, $room_id) ){
-        $response['success'] = true;
-        $response['message'] = "Ditt rum har skapats!";
-        $response['body'] = array("room_id"=>$room_id);
-        return;
+      if(isset($_FILES['image'])) {
+        if( checkFileErrors() ){
+          if( deleteRoomImages($room_id) ) {
+            if( uploadRoomImage($room_id, $_FILES['image']) ){
+              $response['success'] = true;
+              $response['message'] = "Ditt rum har uppdaterats!";
+              return;
+            }
+          }
+        }
       }
     }
-  } 
-  
-  $response['message'] = "Detta rum har redan skapats.";
- 
+  } else {
+    $response['message'] = "Detta rum finns redan.";
+  }
 }
 
 
-function uploadRoomImage($name, $img, $room_id) {
+function uploadRoomImage($room_id, $image) {
   global $conn, $response, $full_target, $thumb_target;
+
+  $name = addslashes($image['name']);
+  $tmp = addslashes($image['tmp_name']);
 
   if( $img_info = @getimagesize( $img ) ){
 
@@ -421,8 +478,6 @@ function createThumb($img, $thumb, $full) {
 
 
 function errorMessage($code) { 
-  global $response;
-
   switch ($code) { 
     case UPLOAD_ERR_INI_SIZE: 
         $message = "The uploaded file exceeds the upload_max_filesize directive in php.ini"; 
@@ -451,7 +506,7 @@ function errorMessage($code) {
         break; 
   } 
 
-  $response['message'] = $message; 
+  return $message; 
 } 
 
 echo json_encode($response);

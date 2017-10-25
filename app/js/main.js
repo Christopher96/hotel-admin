@@ -34,21 +34,27 @@ $(document).ready(function(){
             reader.readAsDataURL(input.files[0]);
           }
 
-          hideSwitch($("#room_img i"), $("#room_img img"), input.files[0]);
+          hideSwitch($("#room_img img"), $("#room_img i"), input.files[0]);
         });
+
+        if(room_id) {
+          updateRoomForm(room_id);
+          $("#room_form [type=submit]").text("Uppdatera hotellrum");
+          $(".title").text("Uppdatera rum");
+        }
 
         $("#room_form").submit(function(e) {
           e.preventDefault();
 
-          var formData = new FormData(this);
-          createRoom(formData);
+          var formData = new FormData($(this));
+          
+          if(room_id) {
+            updateRoom(room_id, formData);
+          } else {
+            createRoom(formData);
+          }
         });
 
-        if(room_id !== undefined) {
-          updateRoomForm(room_id);
-
-          $("#room_form [type=submit]").text("Uppdatera hotellrum");
-        }
       break;
 
       case "rooms":
@@ -57,6 +63,16 @@ $(document).ready(function(){
     }
 });
 
+(function($){
+  $.fn.getFormData = function(){
+    var data = {};
+    var dataArray = $(this).serializeArray();
+    for(var i=0;i<dataArray.length;i++){
+      data[dataArray[i].name] = dataArray[i].value;
+    }
+    return data;
+  }
+})(jQuery);
 
 
 function apiRequest(method, action, params, callback = null){
@@ -97,10 +113,6 @@ function apiRequest(method, action, params, callback = null){
       console.log(response);
     }
   });
-}
-
-function updateRoomFormImg(path) {
-  
 }
 
 function newAlert(alert, isError, message) {
@@ -190,6 +202,19 @@ function createRoom(formData) {
   });
 }
 
+function updateRoom(id, formData) {
+  formData['room_id'] = id;
+  console.log(formData);
+  apiRequest("POST", "updateRoom", formData, function(response) {
+    console.log(response);
+    if(response.success) {
+      newAlert($("#alert"), false, response.message);
+    } else {
+      newAlert($("#alert"), true, response.message);
+    }
+  });
+}
+
 function deleteRoom(id) {
   apiRequest("POST", "deleteRoom", {room_id: id}, function(response) {
     getRoomList();
@@ -210,6 +235,7 @@ function updateRoomForm(id) {
     form.find("[name=department]").val(obj.department);
     form.find("[name=description]").text(obj.description);
     form.find("img").attr("src", obj.image.thumb);
+    hideSwitch($("#room_img img"), $("#room_img i"), true);
   });
 }
 
