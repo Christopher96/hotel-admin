@@ -80,14 +80,17 @@ form {
 
 .no-list-text {
   font-size: 2rem;
-  text-align: center;
-  padding: 1rem;
+}
+
+.edit-btn {
+  margin: 5px;
 }
 
 .title {
   padding-bottom: 2rem;
   margin-bottom: 2rem;
   border-bottom: 3px solid;
+  @extend .text-secondary;
 }
 
 .alert {

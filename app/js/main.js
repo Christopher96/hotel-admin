@@ -39,16 +39,15 @@ $(document).ready(function(){
 
         if(room_id) {
           updateRoomForm(room_id);
-          $("#room_form [type=submit]").text("Uppdatera hotellrum");
-          $(".title").text("Uppdatera rum");
         }
 
         $("#room_form").submit(function(e) {
           e.preventDefault();
 
-          var formData = new FormData($(this));
+          var formData = new FormData(this);
           
           if(room_id) {
+            formData.append("room_id", room_id);
             updateRoom(room_id, formData);
           } else {
             createRoom(formData);
@@ -133,11 +132,14 @@ function newAlert(alert, isError, message) {
   
   
 function getUserList(){
-  $("#user_table tbody").empty();
+
+  var userList = $("#user_table table tbody");
+  userList.empty();
 
   apiRequest("GET", "getUsers", {}, function(response){
       $.each(response.body, function(i, obj){
           if(obj.id == auth.user_id) return;
+
           var tr = $("<tr data-id='"+obj.id+"'></tr>");
   
           tr.append("<td>"+obj.name+"</td>");
@@ -149,20 +151,18 @@ function getUserList(){
           tr.append("<td>"+role+"</td>");
           tr.append("<td>"+obj.timestamp+"</td>");
 
-          var button = $("<button class='btn btn-primary delete'><i class='fa fa-trash'></i></button>");
           var td = $("<td></td>");
-
+          var button = createButton("delete-user", "trash", obj.id);
           td.append(button);
           tr.append(td);
           
-          $("#user_table tbody").append(tr);
+          userList.append(tr);
       });
 
-      $("#user_table .delete").click(function() {
-        var id = $(this).parent("td").parent("tr").data("id");
-        deleteUser(id);
-      })
+      hideSwitch($("#user_table table"), $("#user_table .no-list-text"), userList.children().length > 0);
   });
+
+  
 }
 
 
@@ -171,7 +171,7 @@ function deleteUser(user_id) {
   apiRequest("POST", "deleteUser", {target_id: user_id}, function(response) {
     console.log(response);
     if(response.success) {
-      newAlert($("#alert"), false, response.message);
+      newAlert($("#alert"), true, response.message);
       getUserList();
     } else {
       newAlert($("#alert"), true, response.message);
@@ -203,8 +203,6 @@ function createRoom(formData) {
 }
 
 function updateRoom(id, formData) {
-  formData['room_id'] = id;
-  console.log(formData);
   apiRequest("POST", "updateRoom", formData, function(response) {
     console.log(response);
     if(response.success) {
@@ -215,9 +213,29 @@ function updateRoom(id, formData) {
   });
 }
 
+function changeRoomStatus(id, status) {
+  apiRequest("POST", "changeRoomStatus", {room_id: id, status: status}, function(response) {
+    console.log(response);
+    if(response.success) {
+      getRoomList();
+
+      newAlert($("#alert"), status != 1, response.message);
+      
+    } else {
+      newAlert($("#alert"), true, response.message);
+    }
+  });
+}
+
 function deleteRoom(id) {
   apiRequest("POST", "deleteRoom", {room_id: id}, function(response) {
-    getRoomList();
+    if(response.success) {
+      getRoomList();
+      newAlert($("#alert"), true, response.message);
+      
+    } else {
+      newAlert($("#alert"), true, response.message);
+    }
   });
 }
 
@@ -233,8 +251,11 @@ function updateRoomForm(id) {
     form.find("[name=number]").val(obj.number);
     form.find("[name=level]").val(obj.level);
     form.find("[name=department]").val(obj.department);
+    form.find("[name=status]").val(obj.status);
     form.find("[name=description]").text(obj.description);
     form.find("img").attr("src", obj.image.thumb);
+    form.find("[type=submit]").text("Uppdatera hotellrum");
+    $(".title").text("Uppdatera rum: "+obj.code);
     hideSwitch($("#room_img img"), $("#room_img i"), true);
   });
 }
@@ -252,26 +273,26 @@ function getRoomList() {
       var tr = $("<tr data-id='"+id+"'></tr>");
 
       tr.append("<td><img src='"+obj.image.thumb+"'</td>")
-      tr.append("<td>"+obj.level+obj.department+obj.number+"</td>");
+      tr.append("<td>"+obj.code+"</td>");
       tr.append("<td>"+obj.description+"</td>");
 
       var td = $("<td></td>");
 
       
-      if(obj.cleaned) {
-        td.append(createButton("clean", "check", id));
+      if(obj.status == 1) {
+        td.append(createButton("unclean-room", "remove", id));
       } else {
-        td.append(createButton("unclean", "remove", id));
+        td.append(createButton("clean-room", "check", id));
       }
 
       if(priv) {
-        td.append(createButton("change", "edit", id));
-        td.append(createButton("delete", "trash", id));
+        td.append(createButton("change-room", "edit", id));
+        td.append(createButton("delete-room", "trash", id));
       }
       
       tr.append(td);
       
-      if(obj.cleaned > 0) {
+      if(obj.status == 1) {
         cleanedList.append(tr);
       } else {
         uncleanedList.append(tr);
@@ -285,14 +306,23 @@ function getRoomList() {
 }
 
 function createButton(action, icon, id) {
-  var button = $("<button class='btn btn-primary "+action+"'><i class='fa fa-"+icon+"'></i></button>");
+  var button = $("<button class='btn btn-primary "+action+" edit-btn'><i class='fa fa-"+icon+"'></i></button>");
   button.click(function() {
     switch(action){
-      case "delete":
+      case "delete-room":
         deleteRoom(id);
       break;
-      case "change":
+      case "change-room":
         changeRoom(id);
+      break;
+      case "clean-room":
+        changeRoomStatus(id, 1);
+      break;
+      case "unclean-room":
+        changeRoomStatus(id, 0);
+      break;
+      case "delete-user":
+        deleteUser(id);
       break;
     }
   });
@@ -302,6 +332,7 @@ function createButton(action, icon, id) {
 
 function hideSwitch(show, hide, bool) {
   if(bool) {
+    console.log("asdf");
     show.show();
     hide.hide();
   } else {

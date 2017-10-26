@@ -1,5 +1,5 @@
 <div class="container">
-  <h1 class="title display-4 text-secondary">Användare</h1>
+  <h1 class="title display-4">Användare</h1>
   <div id="alert" class="alert" role="alert">
     <i class="fa fa-exclamation-circle error"></i>
     <i class="fa fa-check-circle check"></i>
@@ -12,7 +12,7 @@
     <div class="card-body">
       <form id="user_form" class="form-inline">
         <div class="form-group col-3">
-          <label for="form_name">Namn:</label>
+          <label for="form_name">Riktigt namn:</label>
           <input id="form_name" name="name" type="text" class="form-control" placeholder="Skriv hela namnet">
         </div>
         <div class="form-group col-3">
@@ -37,22 +37,25 @@
       </form>
     </div>
   </div>
-  <div class="card">
+  <div id="user_table" class="card">
     <div class="card-header">
       Ta bort användare
     </div>
-    <table id="user_table" class="table table-secondary">
-      <thead>
-        <tr>
-          <th>Namn</th>
-          <th>Användarnamn</th>
-          <th>Roll</th>
-          <th>Registrerades</th>
-          <th>Ta bort</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    </table>
+    <div class="card-body">
+      <span class="no-list-text">Inga användare förutom du existerar.</span>
+      <table class="table table-secondary">
+        <thead>
+          <tr>
+            <th>Namn</th>
+            <th>Användarnamn</th>
+            <th>Roll</th>
+            <th>Registrerades</th>
+            <th>Ta bort</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

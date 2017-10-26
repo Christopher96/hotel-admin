@@ -19,8 +19,6 @@ $_REQUEST = cleanArray( $_REQUEST );
 $_POST = cleanArray( $_POST );
 $_GET = cleanArray( $_GET );
 
-print_r($_FILES);
-
 function cleanArray($array){
   global $clean;
   $clean = array();
@@ -93,15 +91,22 @@ if(!empty($_REQUEST['action'])){
           }
         break;
         case 'createRoom':
-        if( checkParams($_POST, array("number", "level", "department", "description")) ){
-            createRoom($_POST['number'], $_POST['level'], $_POST['department'], $_POST['description']);
+        if( checkParams($_POST, array("number", "level", "department", "status", "description")) ){
+            createRoom($_POST['number'], $_POST['level'], $_POST['department'], $_POST['status'], $_POST['description'], $_FILES);
         } else {
             $response['message'] = "Fyll i alla fält för att skapa rum.";
         }
         break;
         case 'updateRoom':
-        if( checkParams($_POST, array("room_id", "number", "level", "department", "description"))){
-            updateRoom($_POST['room_id'], $_POST['number'], $_POST['level'], $_POST['department'], $_POST['description']);
+        if( checkParams($_POST, array("room_id", "number", "level", "department", "status", "description"))){
+            updateRoom($_POST['room_id'], $_POST['number'], $_POST['level'], $_POST['department'], $_POST['status'], $_POST['description'], $_FILES);
+        } else {
+            $response['message'] = "Fyll i alla fält för att uppdatera rum.";
+        }
+        break;
+        case 'changeRoomStatus':
+        if( checkParams($_POST, array("room_id", "status"))){
+            changeRoomStatus($_POST['room_id'], $_POST['status']);
         } else {
             $response['message'] = "Fyll i alla fält för att uppdatera rum.";
         }
@@ -155,17 +160,15 @@ function checkParams($data, $params){
 
 
 function checkFileErrors() {
-  global $_FILES;
-  print_r($_FILES);
-  foreach($_FILES as $file) {
-    $file_error = $file['error'];
-    if ($file_error !== UPLOAD_ERR_OK) { 
-      $response['message'] = errorMessage($file_error);
-      return false;
-    } 
-  }
+  global $_FILES, $response;
 
-  return true;
+  $file_error = $_FILES['error'];
+  if ($file_error == UPLOAD_ERR_OK) { 
+    return true;
+  } else {
+    $response['message'] = errorMessage($file_error);
+    return false;
+  }
 }
 
 
@@ -248,6 +251,10 @@ function getUsers(){
   }
 }
 
+function getRoomCode($room) {
+  return $room["level"].$room["department"].$room["number"];
+}
+
 function getRooms(){
   global $conn, $response;
 
@@ -259,6 +266,7 @@ function getRooms(){
       $response['success'] = true;
 
       while( $room = mysqli_fetch_assoc($result) ) {
+        $room['code'] = getRoomCode($room);
         $room['image'] = getPostImages($room['id']);
         $rooms[] = $room;
       }
@@ -278,6 +286,7 @@ function getSingleRoom($room_id){
   if( mysqli_num_rows($result) > 0 ){
 
     $room = mysqli_fetch_assoc($result);
+    $room['code'] = getRoomCode($room);
     $room['image'] = getPostImages($room['id']);
 
     $response['success'] = true;
@@ -308,10 +317,13 @@ function deleteRoom($room_id){
   if( mysqli_num_rows($result) < 1 ){
     deleteRoomImages($room_id);
     $response['success'] = true;
+    $response['message'] = "Rummet har raderats!";
   }
 }
 
 function deleteRoomImages($room_id) {
+  global $conn, $post_image_target; 
+  
   $query = "SELECT id FROM images WHERE room_id={$room_id}";
   
   if( $result = mysqli_query($conn, $query) ){
@@ -335,7 +347,7 @@ function deleteRoomImages($room_id) {
   return false;
 }
 
-function createRoom($number, $level, $department, $description){
+function createRoom($number, $level, $department, $description, $status, $files){
   global $conn, $response;
   
   if( checkFileErrors() ){
@@ -343,15 +355,21 @@ function createRoom($number, $level, $department, $description){
     $result = mysqli_query($conn, $query);
 
     if( mysqli_num_rows($result) < 1 ){
-      $query = "INSERT INTO rooms (number, level, department, description) VALUES ('{$number}', '{$level}', '{$department}', '{$description}')";
+      
+      $query = "INSERT INTO rooms (number, level, department, description, status) VALUES ('{$number}', '{$level}', '{$department}', '{$description}', '{$status}')";
 
       if( mysqli_query($conn, $query) ){
 
         $room_id = mysqli_insert_id($conn);
 
-        if( uploadRoomImage($room_id, $_FILES) ){
+        if( uploadRoomImage($room_id, $files) ){
           $response['success'] = true;
           $response['message'] = "Ditt rum har skapats!";
+        } else {
+          $query = "DELETE FROM rooms WHERE id={$room_id}";
+          mysqli_query($conn, $query);
+
+          $response['message'] = "Fel vid uppladdning av bild.";
         }
       }
     } else {
@@ -360,31 +378,60 @@ function createRoom($number, $level, $department, $description){
   }
 }
 
-function updateRoom($room_id, $number, $level, $department, $description) {
+function updateRoom($room_id, $number, $level, $department, $status, $description, $files = null) {
   global $conn, $response;
   
-  $query = "SELECT * FROM rooms WHERE number='{$number}' AND level='{$level}' AND department='{$department}'";
+  $query = "SELECT * FROM rooms WHERE number='{$number}' AND level='{$level}' AND department='{$department}' AND id!={$room_id}";
   $result = mysqli_query($conn, $query);
 
   if( mysqli_num_rows($result) < 1 ){
-    $query = "UPDATE rooms SET number='{$number}', level='{$level}', department='{$department}', $description='{$description}' WHERE id={$room_id}";
+    $query = "UPDATE rooms SET number='{$number}', level='{$level}', department='{$department}', description='{$description}', status='{$status}' WHERE id={$room_id}";
 
     if( mysqli_query($conn, $query) ){
 
-      if(isset($_FILES['image'])) {
+      $pass = false;
+
+      if(!empty($files['name'])) {
         if( checkFileErrors() ){
           if( deleteRoomImages($room_id) ) {
-            if( uploadRoomImage($room_id, $_FILES['image']) ){
-              $response['success'] = true;
-              $response['message'] = "Ditt rum har uppdaterats!";
-              return;
+            if( uploadRoomImage($room_id, $files) ){
+              $pass = true; 
+            } else {
+              $query = "DELETE FROM rooms WHERE id={$room_id}";
+              mysqli_query($conn, $query);
+
+              $response['message'] = "Fel vid uppladdning av bild.";
             }
           }
         }
+      } else {
+        $pass = true;
       }
+
+      if($pass) {
+        $response['success'] = true;
+        $response['message'] = "Ditt rum har uppdaterats!";
+        return true;
+      }
+      
     }
   } else {
     $response['message'] = "Detta rum finns redan.";
+  }
+}
+
+function changeRoomStatus($room_id, $status) {
+  global $conn, $response;
+
+  $query = "UPDATE rooms SET status='{$status}' WHERE id={$room_id}";
+
+  if( mysqli_query($conn, $query) ){
+    if($status == 0) {
+      $response['message'] = "Rummet är inte städat längre.";
+    } else {
+      $response['message'] = "Rummet är nu städat!";
+    }
+    $response['success'] = true;
   }
 }
 
@@ -395,7 +442,7 @@ function uploadRoomImage($room_id, $image) {
   $name = addslashes($image['name']);
   $tmp = addslashes($image['tmp_name']);
 
-  if( $img_info = @getimagesize( $img ) ){
+  if( $img_info = getimagesize( $tmp ) ){
 
     $query = "INSERT INTO images (name, room_id) VALUES ('{$name}','{$room_id}')";
 
@@ -407,7 +454,7 @@ function uploadRoomImage($room_id, $image) {
       $full = $full_target.$image_id.$ext;
       $thumb = $thumb_target.$image_id.$ext;
 
-      if( move_uploaded_file($img, $full)){
+      if( move_uploaded_file($tmp, $full)){
 
         if( createThumb($img_info, $thumb, $full) ){
 
@@ -415,18 +462,15 @@ function uploadRoomImage($room_id, $image) {
 
           if( mysqli_query($conn, $query) ){
             return true;
-          } else {
-            $query = "DELETE FROM images WHERE id={$image_id}";
           }
         }
       }
     }
-  } else {
-    $response['message'] = "Bilden får max väga 2 MB";
-    $query = "DELETE FROM images WHERE id={$room_id}";
-    mysqli_query($conn, $query);
   }
 
+  $query = "DELETE FROM images WHERE id={$room_id}";
+  mysqli_query($conn, $query);
+  
   return false;
 }
 

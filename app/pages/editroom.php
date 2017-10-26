@@ -4,7 +4,7 @@
 </script>
 <?php } ?>
 <div class="container">
-    <h1 class="title display-4 text-secondary">
+    <h1 class="title display-4">
         Nytt rum
     </h1>
     <div class="card">
@@ -36,9 +36,17 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <label>Status</label>
+                            <select name="status" class="form-control">
+                                <option value="0">Ostädat</option>
+                                <option value="1">Städat</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label>Beskrivning</label>
                             <textarea name="description" class="form-control" rows="5"></textarea>
                         </div>
+                    
                     </div>
                     <div class="col-4">
                         <div class="form-group">
@@ -57,9 +65,7 @@
                     <span class="message"></span>
                 </div>
                 <button class="btn btn-primary" type="submit">Skapa hotellrum</button>
-                
             </div>
-            
         </form>
     </div>
     
