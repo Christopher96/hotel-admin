@@ -14,7 +14,6 @@ $response = array(
 );
 
 $clean = array();
-$_FILES = cleanArray( $_FILES );
 $_REQUEST = cleanArray( $_REQUEST );
 $_POST = cleanArray( $_POST );
 $_GET = cleanArray( $_GET );
@@ -159,10 +158,10 @@ function checkParams($data, $params){
 }
 
 
-function checkFileErrors() {
-  global $_FILES, $response;
+function checkFileErrors($files) {
+  global $response;
 
-  $file_error = $_FILES['error'];
+  $file_error = $files['error'];
   if ($file_error == UPLOAD_ERR_OK) { 
     return true;
   } else {
@@ -350,19 +349,18 @@ function deleteRoomImages($room_id) {
 function createRoom($number, $level, $department, $description, $status, $files){
   global $conn, $response;
   
-  if( checkFileErrors() ){
+  if( checkFileErrors($files['image']) ){
     $query = "SELECT * FROM rooms WHERE number='{$number}' AND level='{$level}' AND department='{$department}'";
     $result = mysqli_query($conn, $query);
-
-    if( mysqli_num_rows($result) < 1 ){
+    
+    if( mysqli_num_rows($result) == 0 ){
       
       $query = "INSERT INTO rooms (number, level, department, description, status) VALUES ('{$number}', '{$level}', '{$department}', '{$description}', '{$status}')";
-
       if( mysqli_query($conn, $query) ){
 
         $room_id = mysqli_insert_id($conn);
-
-        if( uploadRoomImage($room_id, $files) ){
+        
+        if( uploadRoomImage($room_id, $files['image']) ){
           $response['success'] = true;
           $response['message'] = "Ditt rum har skapats!";
         } else {
@@ -384,7 +382,7 @@ function updateRoom($room_id, $number, $level, $department, $status, $descriptio
   $query = "SELECT * FROM rooms WHERE number='{$number}' AND level='{$level}' AND department='{$department}' AND id!={$room_id}";
   $result = mysqli_query($conn, $query);
 
-  if( mysqli_num_rows($result) < 1 ){
+  if( mysqli_num_rows($result) == 0 ){
     $query = "UPDATE rooms SET number='{$number}', level='{$level}', department='{$department}', description='{$description}', status='{$status}' WHERE id={$room_id}";
 
     if( mysqli_query($conn, $query) ){
@@ -392,9 +390,9 @@ function updateRoom($room_id, $number, $level, $department, $status, $descriptio
       $pass = false;
 
       if(!empty($files['name'])) {
-        if( checkFileErrors() ){
+        if( checkFileErrors($files['image']) ){
           if( deleteRoomImages($room_id) ) {
-            if( uploadRoomImage($room_id, $files) ){
+            if( uploadRoomImage($room_id, $files['image']) ){
               $pass = true; 
             } else {
               $query = "DELETE FROM rooms WHERE id={$room_id}";
@@ -439,15 +437,14 @@ function changeRoomStatus($room_id, $status) {
 function uploadRoomImage($room_id, $image) {
   global $conn, $response, $full_target, $thumb_target;
 
-  $name = addslashes($image['name']);
-  $tmp = addslashes($image['tmp_name']);
+  $name = $image['name'];
+  $tmp = $image['tmp_name'];
 
   if( $img_info = getimagesize( $tmp ) ){
 
     $query = "INSERT INTO images (name, room_id) VALUES ('{$name}','{$room_id}')";
 
     if( mysqli_query($conn, $query) ){
-
       $image_id = mysqli_insert_id($conn);
 
       $ext = image_type_to_extension($img_info[2]);
@@ -455,9 +452,7 @@ function uploadRoomImage($room_id, $image) {
       $thumb = $thumb_target.$image_id.$ext;
 
       if( move_uploaded_file($tmp, $full)){
-
         if( createThumb($img_info, $thumb, $full) ){
-
           $query = "UPDATE images SET full='{$full}',thumb='{$thumb}' WHERE id={$image_id}";
 
           if( mysqli_query($conn, $query) ){

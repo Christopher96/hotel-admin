@@ -1,6 +1,5 @@
-
+@import "bower_components/bootstrap/scss/bootstrap";
 // bower:scss
-@import "bower_components/bootstrap/scss/bootstrap.scss";
 @import "bower_components/font-awesome/scss/font-awesome.scss";
 // endbower
 
@@ -90,7 +89,6 @@ form {
   padding-bottom: 2rem;
   margin-bottom: 2rem;
   border-bottom: 3px solid;
-  @extend .text-secondary;
 }
 
 .alert {

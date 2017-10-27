@@ -167,7 +167,6 @@ function getUserList(){
 
 
 function deleteUser(user_id) {
-  console.log(user_id);
   apiRequest("POST", "deleteUser", {target_id: user_id}, function(response) {
     console.log(response);
     if(response.success) {
@@ -332,7 +331,6 @@ function createButton(action, icon, id) {
 
 function hideSwitch(show, hide, bool) {
   if(bool) {
-    console.log("asdf");
     show.show();
     hide.hide();
   } else {
