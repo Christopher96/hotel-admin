@@ -12,9 +12,9 @@ if( $local ){
   $db = "hotel";
 } else {
   $dbhost = "localhost";
-  $dbuser = "id1125381_root";
+  $dbuser = "id726486_root";
   $dbpass = "rootpassword";
-  $db = "id1125381_blog";
+  $db = "id726486_hotel";
 }
 
 $conn = mysqli_connect( $dbhost, $dbuser, $dbpass, $db ) or die("Error connecting to mysql.");

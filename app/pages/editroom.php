@@ -38,7 +38,7 @@
                         <div class="form-group">
                             <label>Status</label>
                             <select name="status" class="form-control">
-                                <option value="0">Ostädat</option>
+                                <option value="0" selected>Ostädat</option>
                                 <option value="1">Städat</option>
                             </select>
                         </div>

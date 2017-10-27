@@ -1,4 +1,4 @@
-@import "bower_components/bootstrap/scss/bootstrap";
+@import "node_modules/bootstrap/scss/bootstrap";
 // bower:scss
 @import "bower_components/font-awesome/scss/font-awesome.scss";
 // endbower
@@ -60,17 +60,36 @@ form {
   }
 }
 
+table {
+  th:last-child span {
+    float: right;
+  }
+  td:last-child div {
+    float: right;
+    margin-right: -5px;
+  }
+  td {
+    word-wrap: break-word;
+  }
+}
+
+.edit-room {
+  margin-top: 2rem;
+}
+
 .card {
   margin-top: 2rem;
 }
 
 .card-header {
   font-size: 1.2rem;
+  @extend .bg-primary;
+  @extend .text-secondary;
+  border-radius: 0 !important;
 }
 
-.sign {
-  margin-top: 10rem;
-  width: 40rem;
+.container.sign {
+  max-width: 40rem;
 }
 
 .room-table {
@@ -83,17 +102,26 @@ form {
 
 .edit-btn {
   margin: 5px;
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
 .title {
   padding-bottom: 2rem;
   margin-bottom: 2rem;
   border-bottom: 3px solid;
+  @extend .text-secondary;
 }
 
 .alert {
   display: none;
   .fa {
     display: none;
+  }
+}
+
+@include media-breakpoint-up(md) {
+  .log-nav {
+    float: right;
   }
 }

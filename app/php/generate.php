@@ -36,6 +36,8 @@ $delimiter = " - ";
   <!-- bower:js -->
   <script src="../bower_components/jquery/dist/jquery.js"></script>
   <!-- endbower -->
+  <script src="../node_modules/popper.js/dist/umd/popper.js"></script>
+  <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
   <!-- endbuild -->
 
   <!-- build:js js/main.js -->

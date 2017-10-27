@@ -1,7 +1,9 @@
 <div class="container">
     <h1 class="title display-4">
         Rum
-        <a href="?editroom" class="btn btn-primary float-right"><i class="fa fa-plus"></i><span> Skapa nytt hotellrum</span></a>
+        <?php if($priv) { ?>
+            <a href="?editroom" class="btn btn-primary float-right edit-room"><i class="fa fa-plus"></i><span> Skapa nytt hotellrum</span></a>
+        <?php } ?>
     </h1>
     <div id="alert" class="col-12 alert" role="alert">
         <i class="fa fa-exclamation-circle error"></i>
@@ -19,7 +21,7 @@
                 <th>Bild</th>
                 <th>Rumskod</th>
                 <th>Beskrivning</th>
-                <th>Ändra</th>
+                <th><span>Ändra</span></th>
             </thead>
             <tbody>
             </tbody>
@@ -39,7 +41,7 @@
                 <th>Bild</th>
                 <th>Rumskod</th>
                 <th>Beskrivning</th>
-                <th>Ändra</th>
+                <th><span>Ändra</span></th>
             </thead>
             <tbody>
             </tbody>

@@ -10,6 +10,7 @@ $(document).ready(function(){
     }
 
     switch(active) {
+
       case "users":
         getUserList();
         
@@ -145,15 +146,17 @@ function getUserList(){
           tr.append("<td>"+obj.name+"</td>");
           tr.append("<td>"+obj.username+"</td>");
 
-          var role = "Städpersonal";
+          var role = "Städare";
           if(obj.role == 1) role = "Administratör";
 
           tr.append("<td>"+role+"</td>");
           tr.append("<td>"+obj.timestamp+"</td>");
 
           var td = $("<td></td>");
+          var div = $("<div></div>");
           var button = createButton("delete-user", "trash", obj.id);
-          td.append(button);
+          div.append(button);
+          td.append(div);
           tr.append(td);
           
           userList.append(tr);
@@ -276,19 +279,20 @@ function getRoomList() {
       tr.append("<td>"+obj.description+"</td>");
 
       var td = $("<td></td>");
-
+      var div = $("<div></div>");
       
       if(obj.status == 1) {
-        td.append(createButton("unclean-room", "remove", id));
+        div.append(createButton("unclean-room", "remove", id));
       } else {
-        td.append(createButton("clean-room", "check", id));
+        div.append(createButton("clean-room", "check", id));
       }
 
       if(priv) {
-        td.append(createButton("change-room", "edit", id));
-        td.append(createButton("delete-room", "trash", id));
+        div.append(createButton("change-room", "edit", id));
+        div.append(createButton("delete-room", "trash", id));
       }
-      
+
+      td.append(div);
       tr.append(td);
       
       if(obj.status == 1) {

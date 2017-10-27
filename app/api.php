@@ -143,10 +143,9 @@ if(!empty($_REQUEST['action'])){
 }
 
 function checkParams($data, $params){
-  return true;
   foreach ($params as $param) {
     if(isset($data[$param])){
-      if($data[$param] === "") {
+      if($data[$param] == "") {
         return false;
       }
     } else {

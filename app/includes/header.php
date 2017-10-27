@@ -4,8 +4,8 @@
 !-->
 <header id="header">
   <nav class="navbar justify-content-center navbar-expand-md navbar-dark fixed-top bg-dark">
-      <div class="container">
-        <a class="navbar-brand" href="#">Hotell Admin</a>
+      <div class="container <?= ($page == 'signin') ? 'sign': '' ?>">
+        <a class="navbar-brand" href="?rooms">Hotell Admin</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -26,7 +26,7 @@
                 </li>
             <?php } ?>
         </ul>
-        <ul class="navbar-nav float-right">
+        <ul class="log-nav navbar-nav">
             <?php if(isset($user)) { ?>
                 <li class="nav-item">
                     <span class="nav-link">Inloggad som <?= $user['name'] ?></span>
