@@ -35,7 +35,7 @@ $(document).ready(function(){
             reader.readAsDataURL(input.files[0]);
           }
 
-          hideSwitch($("#room_img img"), $("#room_img i"), input.files[0]);
+          hideSwitch($("#room_img .lightbox-img"), $("#room_img i"), input.files[0]);
         });
 
         if(room_id) {
@@ -115,7 +115,17 @@ function apiRequest(method, action, params, callback = null){
   });
 }
 
-function newAlert(alert, isError, message) {
+function newAlert(container, isError, message) {
+  var alert = $(
+    '<div class="alert" role="alert">'+
+      '<i class="fa fa-exclamation-circle error"></i>  '+
+      '<i class="fa fa-check-circle check"></i>  '+
+      '<span class="message"></span>'+
+    '</div>'
+  );
+
+  $("#"+container).append(alert);
+
   alert.addClass(isError ? "alert-danger" : "alert-success");
   alert.removeClass(isError ? "alert-success" : "alert-danger");
   var check = alert.find(".check");
@@ -128,7 +138,12 @@ function newAlert(alert, isError, message) {
 
   alert.unbind("click").click(function() {
     alert.fadeOut(300);
-  })
+  });
+
+  setInterval(function() {
+    alert.fadeOut(300);
+  }, 5000);
+
 }
   
   
@@ -139,27 +154,27 @@ function getUserList(){
 
   apiRequest("GET", "getUsers", {}, function(response){
       $.each(response.body, function(i, obj){
-          if(obj.id == auth.user_id) return;
+        if(obj.id == auth.user_id) return;
 
-          var tr = $("<tr data-id='"+obj.id+"'></tr>");
-  
-          tr.append("<td>"+obj.name+"</td>");
-          tr.append("<td>"+obj.username+"</td>");
+        var tr = $("<tr data-id='"+obj.id+"'></tr>");
 
-          var role = "Städare";
-          if(obj.role == 1) role = "Administratör";
+        tr.append("<td><div><span class='label'>Namn:</span><span class='info'>"+obj.name+"</span></div></td>");
+        tr.append("<td><div><span class='label'>Användarnamn:</span><span class='info'>"+obj.username+"</span></div></td>");
 
-          tr.append("<td>"+role+"</td>");
-          tr.append("<td>"+obj.timestamp+"</td>");
+        var role = "Städare";
+        if(obj.role == 1) role = "Administratör";
 
-          var td = $("<td></td>");
-          var div = $("<div></div>");
-          var button = createButton("delete-user", "trash", obj.id);
-          div.append(button);
-          td.append(div);
-          tr.append(td);
-          
-          userList.append(tr);
+        tr.append("<td><div><span class='label'>Roll:</span><span class='info'>"+role+"</span></div></td>");
+        tr.append("<td><div><span class='label'>Registrerades:</span><span class='info'>"+obj.timestamp+"</span></div></td>");
+
+        var td = $("<td></td>");
+        var div = $("<div></div>");
+        var button = createButton("delete-user", "trash", obj.id);
+        div.append(button);
+        td.append(div);
+        tr.append(td);
+        
+        userList.append(tr);
       });
 
       hideSwitch($("#user_table table"), $("#user_table .no-list-text"), userList.children().length > 0);
@@ -168,15 +183,12 @@ function getUserList(){
   
 }
 
-
 function deleteUser(user_id) {
   apiRequest("POST", "deleteUser", {target_id: user_id}, function(response) {
     console.log(response);
     if(response.success) {
-      newAlert($("#alert"), true, response.message);
+      newAlert("user_list_alert", true, response.message);
       getUserList();
-    } else {
-      newAlert($("#alert"), true, response.message);
     }
   });
 }
@@ -184,10 +196,10 @@ function deleteUser(user_id) {
 function createUser(formData) {
   apiRequest("POST", "createUser", formData, function(response) {
     if(response.success) {
-      newAlert($("#alert"), false, response.message);
+      newAlert("user_form_alert", false, response.message);
       getUserList();
     } else {
-      newAlert($("#alert"), true, response.message);
+      newAlert("user_form_alert", true, response.message);
     }
   });
 }
@@ -197,9 +209,9 @@ function createRoom(formData) {
   apiRequest("POST", "createRoom", formData, function(response) {
     console.log(response);
     if(response.success) {
-      newAlert($("#alert"), false, response.message);
+      newAlert("edit_alert", false, response.message);
     } else {
-      newAlert($("#alert"), true, response.message);
+      newAlert("edit_alert", true, response.message);
     }
   });
 }
@@ -208,9 +220,9 @@ function updateRoom(id, formData) {
   apiRequest("POST", "updateRoom", formData, function(response) {
     console.log(response);
     if(response.success) {
-      newAlert($("#alert"), false, response.message);
+      newAlert("edit_alert", false, response.message);
     } else {
-      newAlert($("#alert"), true, response.message);
+      newAlert("edit_alert", true, response.message);
     }
   });
 }
@@ -220,23 +232,21 @@ function changeRoomStatus(id, status) {
     console.log(response);
     if(response.success) {
       getRoomList();
-
-      newAlert($("#alert"), status != 1, response.message);
-      
-    } else {
-      newAlert($("#alert"), true, response.message);
+      newAlert((status != 1) ? "unclean_alert" : "clean_alert", status != 1, response.message);
     }
   });
 }
 
 function deleteRoom(id) {
+  var alert = ($("#cleaned_rooms tr[data-id="+id+"]").length == 0) ? "unclean_alert" : "clean_alert";
+
   apiRequest("POST", "deleteRoom", {room_id: id}, function(response) {
     if(response.success) {
       getRoomList();
-      newAlert($("#alert"), true, response.message);
+      newAlert(alert, true, response.message);
       
     } else {
-      newAlert($("#alert"), true, response.message);
+      newAlert(alert, true, response.message);
     }
   });
 }
@@ -255,9 +265,14 @@ function updateRoomForm(id) {
     form.find("[name=department]").val(obj.department);
     form.find("[name=status]").val(obj.status);
     form.find("[name=description]").text(obj.description);
-    form.find("img").attr("src", obj.image.thumb);
     form.find("[type=submit]").text("Uppdatera hotellrum");
-    $(".title").text("Uppdatera rum: "+obj.code);
+    
+    var lightbox = form.find(".lightbox-img");
+    lightbox.data("title", obj.image.name);
+    lightbox.attr("href", obj.image.full);
+    lightbox.find("img").attr("src", obj.image.thumb);
+
+    $(".title").text("Uppdatera rum: #"+obj.code);
     hideSwitch($("#room_img img"), $("#room_img i"), true);
   });
 }
@@ -274,8 +289,16 @@ function getRoomList() {
       
       var tr = $("<tr data-id='"+id+"'></tr>");
 
-      tr.append("<td><img src='"+obj.image.thumb+"'</td>")
-      tr.append("<td>"+obj.code+"</td>");
+      var td = $(
+        "<td>"+
+          "<a href='"+obj.image.full+"' data-lightbox='images' data-title='"+obj.image.name+"'>"+ 
+            "<img src='"+obj.image.thumb+"' class='img-thumbnail'>"+
+          "</a>"+
+        "</td>"
+      );
+      tr.append(td);
+
+      tr.append("<td>#"+obj.code+"</td>");
       tr.append("<td>"+obj.description+"</td>");
 
       var td = $("<td></td>");

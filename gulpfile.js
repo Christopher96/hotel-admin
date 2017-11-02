@@ -18,8 +18,18 @@ gulp.task('styles', () => {
     .pipe($.sass.sync({
       outputStyle: 'expanded',
       precision: 10,
-      includePaths: ['.']
+      includePaths: [
+        "node_modules",
+        "bower_components"
+      ],
     }).on('error', $.sass.logError))
+    .pipe($.cssimport({
+      matchPattern: "*.css",
+      includePaths: [
+        "node_modules",
+        "bower_components"
+      ]
+    }))
     .pipe($.autoprefixer({browsers: ['> 1%', 'last 2 versions', 'Firefox ESR']}))
     .pipe($.if(dev, $.sourcemaps.write()))
     .pipe(gulp.dest('dist/css'))
@@ -76,7 +86,10 @@ gulp.task('html', ['styles', 'scripts'], () => {
 });
 
 gulp.task('images', () => {
-  return gulp.src('app/images/**/*')
+  return gulp.src([
+      'app/img/**/*',
+      'node_modules/lightbox2/dist/images/*'
+    ])
     .pipe($.cache($.imagemin()))
     .pipe(gulp.dest('dist/images'));
 });
@@ -106,7 +119,7 @@ gulp.task('serve', () => {
     browserSync.init({
       notify: false,
       port: 9000,
-      proxy: "http://localhost/plugg/dt148g/moment4/dist",
+      proxy: "http://localhost/~syphez/plugg/dt148g/moment4/dist",
     });
 
     gulp.watch([

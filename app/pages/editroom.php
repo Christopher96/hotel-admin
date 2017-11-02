@@ -11,9 +11,9 @@
         <form id="room_form">
             <div class="card-body">
                 <div class="row">
-                    <div class="col-8">
+                    <div class="col-lg-8">
                         <div class="form-group">
-                            <label># Nummer</label>
+                            <label>Nummer</label>
                             <input name="number" type="number" class="form-control" placeholder="Skriv ett rumsnummer">
                         </div>
                         <div class="form-group">
@@ -48,22 +48,20 @@
                         </div>
                     
                     </div>
-                    <div class="col-4">
+                    <div class="col-lg-4">
                         <div class="form-group">
-                            Bild
+                            <label>Bild</label>
                             <div id="room_img">
                                 <i class="fa fa-image"></i>
-                                <img  src="" alt="">
+                                <a class="lightbox-img" href="" data-lightbox="images">
+                                    <img src="" alt="">
+                                </a>
                             </div>
                             <input name="image" id="room_img_input" class="btn btn-primary" type="file" value="Välj en bild">
                         </div>
                     </div>
                 </div>
-                <div id="alert" class="col-12 alert" role="alert">
-                    <i class="fa fa-exclamation-circle error"></i>
-                    <i class="fa fa-check-circle check"></i>
-                    <span class="message"></span>
-                </div>
+                <div id="edit_alert"></div>
                 <button class="btn btn-primary" type="submit">Skapa hotellrum</button>
             </div>
         </form>

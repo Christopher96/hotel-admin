@@ -5,10 +5,12 @@
 <header id="header">
   <nav class="navbar justify-content-center navbar-expand-md navbar-dark fixed-top bg-dark">
       <div class="container <?= ($page == 'signin') ? 'sign': '' ?>">
-        <a class="navbar-brand" href="?rooms">Hotell Admin</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <div class="navbar-header">
+            <a class="navbar-brand" href="?rooms">Hotell Admin</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
         <div class="collapse navbar-collapse" id="navbarCollapse">
         <ul id="menu" class="navbar-nav mr-auto">
             <?php if(isset($user)) { ?>

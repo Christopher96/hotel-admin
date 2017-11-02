@@ -19,9 +19,9 @@
 				</div><br/>
 				<?php if (!empty($error)) { ?>
 				<div class="alert alert-danger" role="alert" >
-						<i class="fa fa-exclamation-circle"></i>
-						<span class="sr-only">Error:</span>
-						<?= $error ?>
+					<i class="fa fa-exclamation-circle"></i>
+					<span class="sr-only">Error:</span>
+					<?= $error ?>
 				</div>
 				<?php } ?>
 				<button type="submit" class="btn btn-primary float-right">Logga in</button>

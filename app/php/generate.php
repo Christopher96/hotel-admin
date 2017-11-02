@@ -34,9 +34,10 @@ $delimiter = " - ";
  
   <!-- build:js js/vendor.js -->
   <!-- bower:js -->
-  <script src="../bower_components/jquery/dist/jquery.js"></script>
   <!-- endbower -->
+  <script src="../node_modules/jquery/dist/jquery.js"></script>
   <script src="../node_modules/popper.js/dist/umd/popper.js"></script>
+  <script src="../node_modules/lightbox2/dist/js/lightbox.min.js"></script>
   <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
   <!-- endbuild -->
 
