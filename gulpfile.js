@@ -1,4 +1,3 @@
-// generated on 2017-09-18 using generator-webapp 3.0.1
 const gulp = require('gulp');
 const gulpLoadPlugins = require('gulp-load-plugins');
 const browserSync = require('browser-sync').create();
@@ -87,7 +86,7 @@ gulp.task('html', ['styles', 'scripts'], () => {
 
 gulp.task('images', () => {
   return gulp.src([
-      'app/img/**/*',
+      'app/images/**/*',
       'node_modules/lightbox2/dist/images/*'
     ])
     .pipe($.cache($.imagemin()))
@@ -95,12 +94,11 @@ gulp.task('images', () => {
 });
 
 gulp.task('fonts', () => {
-  return gulp.src('bower_components/font-awesome/fonts/*.{eot,svg,ttf,woff,woff2}')
+  return gulp.src([
+    'app/fonts/**/*',
+    'bower_components/font-awesome/fonts/*.{eot,svg,ttf,woff,woff2}'
+  ])
     .pipe(gulp.dest('dist/fonts'));
-  // return gulp.src(require('main-bower-files')('**/*.{eot,svg,ttf,woff,woff2}', function (err) {})
-  //   .concat('app/fonts/**/*'))
-  //   .pipe($.if(dev, gulp.dest('.tmp/fonts'), gulp.dest('dist/fonts')));
-
 });
 
 gulp.task('extras', () => {
@@ -119,7 +117,7 @@ gulp.task('serve', () => {
     browserSync.init({
       notify: false,
       port: 9000,
-      proxy: "http://localhost/~syphez/plugg/dt148g/moment4/dist",
+      proxy: "http://localhost/plugg/dt148g/moment4/dist",
     });
 
     gulp.watch([

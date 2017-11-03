@@ -1,10 +1,10 @@
 <div class="container">
-    <h1 class="title display-4">
-        <span>Rum</span>
+    <div class="title">
+        <span class="display-4">Rum</span>
         <?php if($priv) { ?>
             <a href="?editroom" class="btn btn-primary float-right new-room"><i class="fa fa-plus"></i><span> Skapa nytt hotellrum</span></a>
         <?php } ?>
-    </h1>
+    </div>
     <div id="uncleaned_rooms" class="card">
         <div class="card-header">
             Ej städade rum

@@ -1,6 +1,7 @@
 <div class="container">
-  <h1 class="title display-4">Användare</h1>
-  
+  <div class="title">
+    <span class="display-4">Användare</span>
+  </div>
   <div class="card">
     <div class="card-header">
       Lägg till en ny användare

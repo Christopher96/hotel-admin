@@ -12,12 +12,12 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
 
 		if( mysqli_num_rows($result) == 1 ){
 
-			$user = mysqli_fetch_assoc($result);
+			$user_data = mysqli_fetch_assoc($result);
 
-			if( password_verify($password, $user['pw_hash']) ){
-				$_SESSION['user_id'] = $user['id'];
+			if( password_verify($password, $user_data['pw_hash']) ){
+				$_SESSION['user_id'] = $user_data['id'];
 
-				updateUserSession($user['id'], session_id());
+				updateUserSession($user_data['id'], session_id());
 
 				redirect("rooms");
 			} else {

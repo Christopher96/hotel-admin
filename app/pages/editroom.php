@@ -4,9 +4,9 @@
 </script>
 <?php } ?>
 <div class="container">
-    <h1 class="title display-4">
-        Nytt rum
-    </h1>
+    <div class="title">
+        <span class="display-4">Nytt rum</span><span class="code"></span>
+    </div>
     <div class="card">
         <form id="room_form">
             <div class="card-body">

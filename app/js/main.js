@@ -63,18 +63,6 @@ $(document).ready(function(){
     }
 });
 
-(function($){
-  $.fn.getFormData = function(){
-    var data = {};
-    var dataArray = $(this).serializeArray();
-    for(var i=0;i<dataArray.length;i++){
-      data[dataArray[i].name] = dataArray[i].value;
-    }
-    return data;
-  }
-})(jQuery);
-
-
 function apiRequest(method, action, params, callback = null){
 
   var isFormData = params.constructor.name === "FormData";
@@ -272,7 +260,8 @@ function updateRoomForm(id) {
     lightbox.attr("href", obj.image.full);
     lightbox.find("img").attr("src", obj.image.thumb);
 
-    $(".title").text("Uppdatera rum: #"+obj.code);
+    $(".title span").text("Uppdatera rum");
+    $(".title .code").text(" #"+obj.code);
     hideSwitch($("#room_img img"), $("#room_img i"), true);
   });
 }

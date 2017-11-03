@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 
 require_once("php/connect.php");
 
-$full_target = "img/post_images/post_image_";
+$full_target = "images/post_images/post_image_";
 $thumb_target = $full_target."thumb_";
 
 $response = array(
@@ -41,8 +41,26 @@ function cleanArray($array){
 
 if(!empty($_REQUEST['action'])){
 
-  $methodIsValid = false;
+  $hasSession = false;
+  $hasPriv = false;
 
+  if(!empty($_REQUEST['user_id']) && !empty($_REQUEST['session_id'])){
+    
+    $user_id = $_REQUEST['user_id'];
+    $session_id = $_REQUEST['session_id'];
+
+    $result = mysqli_query($conn, "SELECT role, last_session FROM users WHERE id='{$user_id}'");
+    $user_data = mysqli_fetch_assoc($result);
+
+    if($user_data['last_session'] === $session_id){
+      $hasSession = true;
+      if($user_data['role'] == 1) {
+        $hasPriv = true;
+      }
+    }
+  }
+
+  $methodIsValid = false;
 
   switch ($_REQUEST['action']) {
     case 'createUser':
@@ -50,20 +68,12 @@ if(!empty($_REQUEST['action'])){
     case 'createRoom':
     case 'updateRoom':
     case 'deleteRoom':
-    case 'changeName':
-    case 'getProfilePosts':
-    case 'getUserInfo':
-      if(!empty($_REQUEST['user_id']) && !empty($_REQUEST['session_id'])){
-
-        $user_id = $_REQUEST['user_id'];
-        $session_id = $_REQUEST['session_id'];
-
-        $result = mysqli_query($conn, "SELECT last_session FROM users WHERE id='{$user_id}'");
-
-        if(mysqli_fetch_assoc($result)['last_session'] === $session_id){
-          $methodIsValid = true;
-        }
-      }
+      $methodIsValid = $hasSession && $hasPriv;
+    break;
+    case 'getRooms':
+    case 'getUsers':
+    case 'getSingleRoom':
+      $methodIsValid = $hasSession;
     break;
     default:
       $methodIsValid = true;
@@ -91,7 +101,7 @@ if(!empty($_REQUEST['action'])){
         break;
         case 'createRoom':
         if( checkParams($_POST, array("number", "level", "department", "status", "description")) ){
-            createRoom($_POST['number'], $_POST['level'], $_POST['department'], $_POST['status'], $_POST['description'], $_FILES);
+            createRoom($_POST['number'], $_POST['level'], $_POST['department'], $_POST['status'], $_POST['description'], $user_id, $_FILES);
         } else {
             $response['message'] = "Fyll i alla fält för att skapa rum.";
         }
@@ -115,12 +125,6 @@ if(!empty($_REQUEST['action'])){
             deleteRoom($_POST['room_id']);
           }
         break;
-        case 'changeName':
-          if( checkParams($_POST, array("name")) ){
-            updateUserInfo("name", $_POST['name'], false, $user_id);
-          }
-        break;
-
       }
 
     } else if(!empty($_GET['action'])){
@@ -208,27 +212,6 @@ function deleteUser($target_id){
   }
 }
 
-function getUserInfo($user_id){
-  global $conn, $response;
-
-  $query = "SELECT name FROM users WHERE id={$user_id}";
-
-  if( $result = mysqli_query($conn, $query) ){
-    $response['body'] = mysqli_fetch_assoc($result);
-    $response['success'] = true;
-  }
-}
-
-function updateUserInfo($col, $val, $user_id){
-  global $conn, $response;
-
-  $query = "UPDATE users SET {$col}='{$val}' WHERE id={$user_id}";
-
-  if( $result = mysqli_query($conn, $query) ){
-    $response['success'] = true;
-  }
-}
-
 function getUsers(){
   global $conn, $response;
 
@@ -265,7 +248,7 @@ function getRooms(){
 
       while( $room = mysqli_fetch_assoc($result) ) {
         $room['code'] = getRoomCode($room);
-        $room['image'] = getPostImages($room['id']);
+        $room['image'] = getRoomImages($room['id']);
         $rooms[] = $room;
       }
 
@@ -285,7 +268,7 @@ function getSingleRoom($room_id){
 
     $room = mysqli_fetch_assoc($result);
     $room['code'] = getRoomCode($room);
-    $room['image'] = getPostImages($room['id']);
+    $room['image'] = getRoomImages($room['id']);
 
     $response['success'] = true;
     $response['body'] = $room;
@@ -293,7 +276,7 @@ function getSingleRoom($room_id){
 }
 
 
-function getPostImages($room_id){
+function getRoomImages($room_id){
   global $conn;
 
   $query = "SELECT * FROM images WHERE room_id={$room_id}";
@@ -345,18 +328,19 @@ function deleteRoomImages($room_id) {
   return false;
 }
 
-function createRoom($number, $level, $department, $description, $status, $files){
+function createRoom($number, $level, $department, $description, $status, $created_by, $files){
   global $conn, $response;
   
   if( checkFileErrors($files['image']) ){
+    
     $query = "SELECT * FROM rooms WHERE number='{$number}' AND level='{$level}' AND department='{$department}'";
     $result = mysqli_query($conn, $query);
     
     if( mysqli_num_rows($result) == 0 ){
-      
-      $query = "INSERT INTO rooms (number, level, department, description, status) VALUES ('{$number}', '{$level}', '{$department}', '{$description}', '{$status}')";
-      if( mysqli_query($conn, $query) ){
+    
+      $query = "INSERT INTO rooms (number, level, department, description, status, created_by) VALUES ('{$number}', '{$level}', '{$department}', '{$description}', '{$status}', '{$created_by}')";
 
+      if( mysqli_query($conn, $query) ){
         $room_id = mysqli_insert_id($conn);
         
         if( uploadRoomImage($room_id, $files['image']) ){

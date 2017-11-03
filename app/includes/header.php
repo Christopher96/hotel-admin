@@ -6,7 +6,9 @@
   <nav class="navbar justify-content-center navbar-expand-md navbar-dark fixed-top bg-dark">
       <div class="container <?= ($page == 'signin') ? 'sign': '' ?>">
         <div class="navbar-header">
-            <a class="navbar-brand" href="?rooms">Hotell Admin</a>
+            <a class="navbar-brand" href="?rooms">
+                <span>Hotel Admin</span>
+            </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>

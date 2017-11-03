@@ -3,10 +3,15 @@
   Description: Error handeling and redirection for signing in
 !-->
 <div class="container sign">
+
 	<div class="card">
-		<h4 class="card-header">
+		<div id="logo">
+			<img src="images/logo.png" alt="main logo">
+		</div>
+		<div class="card-header">
+			
 			<span>Logga in</span>
-		</h4>
+		</div>
 		<div class="card-body">
 			<form id="login_form" method="POST" action="?signin">
 				<p>Användarnamn</p>
@@ -29,4 +34,5 @@
 		</div>
 	</div>
 </div>
+
 
