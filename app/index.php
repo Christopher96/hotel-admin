@@ -4,6 +4,7 @@
 
 include("php/core.php");
 
+$private = array("users");
 $scripts = array("signout", "signin", "signup");
 
 if( $page = key($_GET) ){
@@ -12,8 +13,15 @@ if( $page = key($_GET) ){
 		include("php/".$page.".php");
 	}
 	
-	if(!isset($user) && $page != "signin"){
-		redirect("signin");
+	if(!isset($user)){
+		if($page != "signin")
+			redirect("signin");
+	} else {
+		if($page == "signin")
+			redirect("rooms");
+
+		if(in_array($page, $private) && !$priv)
+			redirect("rooms");
 	}
 	
 	$page_title = $page;

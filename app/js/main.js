@@ -265,7 +265,7 @@ function updateRoomForm(id) {
 
     $(".title span").text("Uppdatera rum");
     $(".title .code").text(" #"+obj.code);
-    hideSwitch($("#room_img img"), $("#room_img i"), true);
+    hideSwitch($("#room_img .lightbox-img"), $("#room_img i"), true);
   });
 }
 

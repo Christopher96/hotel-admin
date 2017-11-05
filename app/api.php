@@ -105,15 +105,15 @@ if(!empty($_REQUEST['action'])){
           }
         break;
         case 'createRoom':
-        if( checkParams($_POST, array("number", "level", "department", "status", "description")) ){
-            createRoom($_POST['number'], $_POST['level'], $_POST['department'], $_POST['status'], $_POST['description'], $user_id, $_FILES);
+        if( checkParams($_POST, array("number", "level", "department", "description", "status")) ){
+            createRoom($_POST['number'], $_POST['level'], $_POST['department'], $_POST['description'], $_POST['status'], $user_id, $_FILES);
         } else {
             $response['message'] = "Fyll i alla fält för att skapa rum.";
         }
         break;
         case 'updateRoom':
-        if( checkParams($_POST, array("room_id", "number", "level", "department", "status", "description"))){
-            updateRoom($_POST['room_id'], $_POST['number'], $_POST['level'], $_POST['department'], $_POST['status'], $_POST['description'], $_FILES);
+        if( checkParams($_POST, array("room_id", "number", "level", "department", "description", "status"))){
+            updateRoom($_POST['room_id'], $_POST['number'], $_POST['level'], $_POST['department'], $_POST['description'], $_POST['status'], $_FILES);
         } else {
             $response['message'] = "Fyll i alla fält för att uppdatera rum.";
         }
@@ -291,9 +291,8 @@ function getRoomImages($room_id){
   }
 }
 
-
 function deleteRoom($room_id){
-  global $conn, $response, $post_image_target;
+  global $conn, $response;
 
   $query = "DELETE FROM rooms WHERE id={$room_id}";
   mysqli_query($conn, $query);
@@ -308,7 +307,7 @@ function deleteRoom($room_id){
 }
 
 function deleteRoomImages($room_id) {
-  global $conn, $post_image_target; 
+  global $conn, $full_target; 
   
   $query = "SELECT id FROM images WHERE room_id={$room_id}";
   
@@ -318,9 +317,8 @@ function deleteRoomImages($room_id) {
       $query = "DELETE FROM images WHERE id={$image_id}";
 
       if( mysqli_query($conn, $query) ){
-
-        $image = $post_image_target.$image_id;
-        $files = glob($image."*");
+      
+        $files = glob($full_target."*".$image_id."*");
         foreach ($files as $file) {
           unlink($file);
         }
@@ -364,7 +362,7 @@ function createRoom($number, $level, $department, $description, $status, $create
   }
 }
 
-function updateRoom($room_id, $number, $level, $department, $status, $description, $files = null) {
+function updateRoom($room_id, $number, $level, $department, $description, $status, $files = null) {
   global $conn, $response;
   
   $query = "SELECT * FROM rooms WHERE number='{$number}' AND level='{$level}' AND department='{$department}' AND id!={$room_id}";
@@ -377,7 +375,7 @@ function updateRoom($room_id, $number, $level, $department, $status, $descriptio
 
       $pass = false;
 
-      if(!empty($files['name'])) {
+      if(!empty($files['image']['name'])) {
         if( checkFileErrors($files['image']) ){
           if( deleteRoomImages($room_id) ) {
             if( uploadRoomImage($room_id, $files['image']) ){
