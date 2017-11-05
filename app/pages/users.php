@@ -1,3 +1,7 @@
+<!--
+  Created by: Christopher Gauffin
+  Description: Form for creating new users and a table displaying all the existing users
+!-->
 <div class="container">
   <div class="title">
     <span class="display-4">Användare</span>

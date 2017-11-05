@@ -3,6 +3,7 @@
   Description: Core functionality for hotel admin, contains functions for API requests and list generation of users and rooms
 */
 
+// This function fires when the document is loaded and checks for which page it is
 $(document).ready(function(){
     if(active) {
       $("#menu li.active").removeClass("active");
@@ -63,6 +64,7 @@ $(document).ready(function(){
     }
 });
 
+// Helper function for making API calls
 function apiRequest(method, action, params, callback = null){
 
   var isFormData = params.constructor.name === "FormData";
@@ -103,6 +105,7 @@ function apiRequest(method, action, params, callback = null){
   });
 }
 
+// Generates alerts with a custom message
 function newAlert(container, isError, message) {
   var alert = $(
     '<div class="alert" role="alert">'+
@@ -134,7 +137,7 @@ function newAlert(container, isError, message) {
 
 }
   
-  
+// Generates a list of all the users
 function getUserList(){
 
   var userList = $("#user_table table tbody");
@@ -266,6 +269,7 @@ function updateRoomForm(id) {
   });
 }
 
+// Generates a list of all the rooms
 function getRoomList() {
   apiRequest("GET", "getRooms", {}, function(response) {
     var cleanedList = $("#cleaned_rooms table tbody");

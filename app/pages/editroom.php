@@ -1,9 +1,16 @@
+<!--
+    Created by: Christopher Gauffin
+    Description: Form for creating and updating room data
+!-->
+
 <?php if(isset($_GET['room_id'])) { ?>
-<script>
-    room_id = <?= $_GET['room_id'] ?>;
-</script>
+    <script>
+        room_id = <?= $_GET['room_id'] ?>;
+    </script>
 <?php } ?>
+
 <div class="container">
+
     <div class="title">
         <span class="display-4">Nytt rum</span><span class="code"></span>
     </div>

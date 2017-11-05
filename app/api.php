@@ -1,6 +1,7 @@
 <?php
 // Created by: Christopher Gauffin
 // Description: Core API functionality, contains cleaning method, session check, profile edit, post retrieval, post creation and post deletion.
+
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -13,6 +14,8 @@ $response = array(
   "success" => false
 );
 
+
+// Clean all arrays to avoid SQL injections
 $clean = array();
 $_REQUEST = cleanArray( $_REQUEST );
 $_POST = cleanArray( $_POST );
@@ -44,6 +47,7 @@ if(!empty($_REQUEST['action'])){
   $hasSession = false;
   $hasPriv = false;
 
+  // Check for previous session
   if(!empty($_REQUEST['user_id']) && !empty($_REQUEST['session_id'])){
     
     $user_id = $_REQUEST['user_id'];
@@ -62,6 +66,7 @@ if(!empty($_REQUEST['action'])){
 
   $methodIsValid = false;
 
+  // Check if method is valid depending on privlege and session
   switch ($_REQUEST['action']) {
     case 'createUser':
     case 'deleteUser':

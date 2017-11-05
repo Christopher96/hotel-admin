@@ -1,3 +1,8 @@
+// Created by: Christopher Gauffin
+// Description: Global CSS styling for all pages, requires SCSS compilation.
+
+// ------------- IMPORTS ------------- 
+
 @import "bootstrap/scss/bootstrap";
 @import "lightbox2/dist/css/lightbox.css";
 // bower:scss
@@ -6,8 +11,12 @@
 
 @import url('https://fonts.googleapis.com/css?family=Lobster|Saira');
 
+// ------------- VARIABLES ------------- 
+
 $brandfont: "Lobster";
 $mainfont: "Saira";
+
+// ------------- ELEMENTS ------------- 
 
 html {
   width: 100%;
@@ -33,6 +42,8 @@ form {
     width: 100% !important;
   }
 }
+
+// ------------- IDs ------------- 
 
 #content {
   margin: 10rem 0;
@@ -79,7 +90,14 @@ form {
   padding: 2rem;
   background-color: white;
   text-align: center;
+  img {
+    width: 100%;
+    max-width: 300px;
+  }
 }
+
+
+// ------------- CLASSSES ------------- 
 
 .navbar {
   border-bottom: 3px solid;
@@ -133,6 +151,9 @@ form {
 .new-room {
   margin-top: 2rem;
 }
+
+
+// ------------- MEDIA QUERIES ------------- 
 
 @include media-breakpoint-up(md) {
   .log-nav {
@@ -209,13 +230,6 @@ form {
       }
       td:nth-child(3) {
         display: none;
-        &::before {
-          content: "Beskrivning";
-          text-align: center;
-          width: 100%;
-          display: block;
-          font-weight: bold;
-        }
       }
       td {
         order: 2;

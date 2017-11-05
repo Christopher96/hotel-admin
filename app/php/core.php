@@ -1,4 +1,6 @@
 <?php
+// Created by: Christopher Gauffin
+// Description: Core script for starting the session and functions for updating it and for redirection
 session_start();
 require_once("connect.php");
 

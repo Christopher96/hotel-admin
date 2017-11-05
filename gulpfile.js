@@ -117,7 +117,7 @@ gulp.task('serve', () => {
     browserSync.init({
       notify: false,
       port: 9000,
-      proxy: "http://localhost/plugg/dt148g/moment4/dist",
+      proxy: "http://localhost/~syphez/plugg/dt148g/moment4/dist",
     });
 
     gulp.watch([

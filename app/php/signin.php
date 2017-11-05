@@ -1,4 +1,7 @@
 <?php
+// Created by: Christopher Gauffin
+// Description: Script for signing the user in creating and saving a new session ID
+
 $error = false;
 $page_title = "Sign in";
 
